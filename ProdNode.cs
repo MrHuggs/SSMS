@@ -23,9 +23,12 @@ namespace SSMS
         {
             int i = 0;
 
+            var sort_val = child.GetSortVal();
+
             for (i = 0; i < Children.Count; i++)
             {
-                if (child.LexicalCompare(Children[i]) > 0)
+                var child_val = Children[i].GetSortVal();
+                if (NodeSortVal.Compare(sort_val, child_val) < 0)
                     break;
             }
             Children.Insert(i, child);
@@ -36,41 +39,39 @@ namespace SSMS
             Children.Remove(node);
         }
 
-        // Compare for lexcial and presentation purposes. Should be stable.
-        public override int LexicalCompare(SymNode other)
+        override public NodeSortVal GetSortVal()
         {
-            if (other.Type < NodeTypes.Var)
+            if (Children.Count == 0)
+                return new NodeSortVal(Type);
+
+
+            // We should be sorted based on our first no-constant node.
+            // So, for example, 4 * 3 * x * y is sorted based on x.
+
+            for (int i = 0; i < Children.Count; i++)
             {
-                return -1;
+                if (Children[i].Type != NodeTypes.Constant)
+                    return Children[i].GetSortVal();
             }
 
-            if (other.Type > NodeTypes.Var)
-            {
-                return 1;
-            }
+            return Children[0].GetSortVal();
 
-            var mycount = Children.Count;
-
-
-            ProdNode pnode = (ProdNode)other;
-            var ocount = pnode.Children.Count;
-
-            if (mycount == 0)
-                return mycount - ocount;
-
-            if (ocount == 0)
-                return 1;
-
-            return Children[0].LexicalCompare(pnode.Children[0]);            
         }
-
 
         public override void Format(StringBuilder sb)
         {
+            sb.Append("(");
+            bool first = true;
             foreach (var node in Children)
             {
+                if (first)
+                    first = false;
+                else
+                    sb.Append(" ");
+
                 node.Format(sb);
             }
+            sb.Append(")");
         }
 
         public override bool IsEqual(SymNode other)
@@ -91,5 +92,19 @@ namespace SSMS
             }
             return true;
         }
+
+        public override SymNode DeepCopy()
+        {
+            var n = new ProdNode();
+
+            for (int i = 0; i < Children.Count; i++)
+            {
+                n.Children.Add(Children[i].DeepCopy());
+            }
+            return n;
+        }
+
+
+
     }
 }

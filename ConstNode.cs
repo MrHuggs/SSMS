@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class VarNode : SymNode
+    class ConstNode : SymNode
     {
-        public VarNode(String var)
+        public ConstNode(double val)
         {
-            Type = NodeTypes.Var;
-            Var = var;
+            Type = NodeTypes.Constant;
+            Value = val;
         }
 
-        String Var;
+        double Value;
 
         public override void Format(StringBuilder sb)
         {
-            sb.Append(Var);
+            sb.Append(Value);
         }
 
         public override bool IsEqual(SymNode other)
@@ -26,18 +26,17 @@ namespace SSMS
             if (other.Type != NodeTypes.Var)
                 return false;
 
-            return ((VarNode)other).Var == Var;
+            return ((ConstNode)other).Value == Value;
         }
 
         public override NodeSortVal GetSortVal()
         {
-            return new NodeSortVal(Type, Var);
+            return new NodeSortVal(Type, Value);
         }
 
         public override SymNode DeepCopy()
         {
-            return new VarNode(Var);
+            return new ConstNode(Value);
         }
-
     }
 }
