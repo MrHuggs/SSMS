@@ -42,11 +42,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChildListNode.cs" />
+    <Compile Include="CommutativeNode.cs" />
     <Compile Include="ConstNode.cs" />
+    <Compile Include="CosNode.cs" />
+    <Compile Include="FunctionNode.cs" />
+    <Compile Include="PlusNode.cs" />
+    <Compile Include="PowerNode.cs" />
     <Compile Include="ProdNode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SinNode.cs" />
     <Compile Include="SymNode.cs" />
+    <Compile Include="TrigNode.cs" />
     <Compile Include="VarNode.cs" />
   </ItemGroup>
   <ItemGroup>

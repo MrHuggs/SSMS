@@ -6,6 +6,10 @@ using System.Diagnostics;
 
 namespace SSMS
 {
+    // List of all possible node types. Node there there are some intermediate helper subclasses
+    // of SymNode that are not included.
+    //
+    // They are ordere by operation precedence.
     enum NodeTypes
     {
         Constant,
@@ -14,9 +18,9 @@ namespace SSMS
         Cos,
         Sin,
         Tan,
-        Sum,        
         Div,
-        Prod
+        Prod,
+        Plus,
     };
 
     struct NodeSortVal
@@ -104,7 +108,7 @@ namespace SSMS
             return new NodeSortVal(Type);
         }
 
-        public abstract SymNode DeepCopy();
+        public abstract SymNode DeepClone();
 
     }
 }

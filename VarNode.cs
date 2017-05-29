@@ -34,7 +34,7 @@ namespace SSMS
             return new NodeSortVal(Type, Var);
         }
 
-        public override SymNode DeepCopy()
+        public override SymNode DeepClone()
         {
             return new VarNode(Var);
         }

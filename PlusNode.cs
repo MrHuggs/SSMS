@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class ProdNode : CommutativeNode
+    class PlusNode : CommutativeNode
     {
-        public ProdNode()
+        public PlusNode()
         {
-           Type = NodeTypes.Prod;
+            Type = NodeTypes.Plus;
         }
 
         public override void Format(StringBuilder sb)
@@ -21,26 +21,16 @@ namespace SSMS
                 if (first)
                     first = false;
                 else
-                    sb.Append(" ");
+                    sb.Append("+");
 
-                if (node.Type > NodeTypes.Prod)
-                {
-                    // If its lower precedence, then surround it by ():
-                    sb.Append("(");
-                    node.Format(sb);
-                    sb.Append(")");
-                }
-                else
-                {
-                    node.Format(sb);
-                }
+                node.Format(sb);
             }
         }
-           
+
 
         public override SymNode DeepClone()
         {
-            var n = new ProdNode();
+            var n = new PlusNode();
             n.DeepCloneChildren(this);
 
             return n;

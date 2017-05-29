@@ -34,7 +34,7 @@ namespace SSMS
             return new NodeSortVal(Type, Value);
         }
 
-        public override SymNode DeepCopy()
+        public override SymNode DeepClone()
         {
             return new ConstNode(Value);
         }
