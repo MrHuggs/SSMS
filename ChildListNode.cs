@@ -20,6 +20,9 @@ namespace SSMS
         
         abstract public void AddChild(SymNode child);
 
+        public void RemoveChild(int index) { Children.RemoveAt(index);  }
+        public void RemoveLastChild() { Children.RemoveAt(Children.Count - 1);  }
+
         public override bool IsEqual(SymNode other)
         {
             if (other.Type != NodeTypes.Var)

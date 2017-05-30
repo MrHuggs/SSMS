@@ -16,8 +16,8 @@ namespace SSMS
             Power = power;
         }
 
-        SymNode Base;
-        SymNode Power;
+        public SymNode Base;
+        public SymNode Power;
 
         public override void Format(StringBuilder sb)
         {
@@ -48,5 +48,20 @@ namespace SSMS
         {
             return new PowerNode(Base.DeepClone(), Power.DeepClone());
         }
+
+        // A helper: If this has a fixed exponent, return it.
+        public bool GetFixedPower(out double power_val)
+        {
+            if (Power.Type != NodeTypes.Constant)
+            {
+                power_val = 0;
+                return false;
+            }
+
+            power_val = ((ConstNode)Power).Value;
+            return true;
+        }
+
+
     }
 }

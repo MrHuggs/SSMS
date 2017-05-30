@@ -13,32 +13,99 @@ namespace SSMS
     {
         static void Main(string[] args)
         {
+            DistributiveTransformTest();
+            ConstFoldTransformTest();
             Cos2TransfromTest();
             ProdNodeTest();
         }
 
+        static  public void DistributiveTransformTest()
+        {
+            ProdNode p = new ProdNode();
+            PlusNode plus_node = new PlusNode();
+            plus_node.AddChild(new VarNode("a"));
+            plus_node.AddChild(new VarNode("b"));
+            p.AddChild(plus_node);
+            p.AddChild(new ConstNode(4));
+
+            p.Print();
+
+        }
+
+        static public void ConstFoldTransformTest()
+        {
+            ProdNode p = new ProdNode();
+
+            p.AddChild(new ConstNode(4));
+            Debug.Assert(!ConstFoldTransform.Transform(p));
+
+            p.AddChild(new ConstNode(-4));
+            Debug.Assert(ConstFoldTransform.Transform(p));
+            Debug.Assert(p.ToString() == "-16");
+
+            p.AddChild(new VarNode("a"));
+            Debug.Assert(!ConstFoldTransform.Transform(p));
+            p.AddChild(new ConstNode(-1));
+            Debug.Assert(ConstFoldTransform.Transform(p));
+            Debug.Assert(p.ToString() == "16 a");
+
+            p.AddChild(new ConstNode(1.0/ 16.0));
+            Debug.Assert(ConstFoldTransform.Transform(p));
+            Debug.Assert(p.ToString() == "a");
+
+            p.AddChild(new ConstNode(25.0));
+            p.AddChild(new ConstNode(0));
+            Debug.Assert(ConstFoldTransform.Transform(p));
+            Debug.Assert(p.ToString() == "0");
+
+        }
+
+
+
         static public void Cos2TransfromTest()
         {
-            var cos2 = new PowerNode(
-                                        new CosNode(new VarNode("t")),
-                                        new ConstNode(2)
-                                        );
+            SymNode cos2, sin2;
+            ProdNode cp, sp;
+            PlusNode p;
 
-            var sin2 = new PowerNode(
-                                        new SinNode(new VarNode("t")),
-                                        new ConstNode(2)
-                                        );
-
-            var p = new PlusNode();
+            cos2 = new PowerNode(new CosNode(new VarNode("t")), new ConstNode(2));
+            sin2 = new PowerNode(new SinNode(new VarNode("y")), new ConstNode(2));
+            p = new PlusNode();
             p.AddChild(cos2);
             p.AddChild(sin2);
+            p.Print();
+            Debug.Assert(!Cos2Sin2Transform.Transform(p));
+
+            cos2 = new PowerNode(new CosNode(new VarNode("t")), new ConstNode(2));
+            sin2 = new PowerNode(new SinNode(new VarNode("t")), new ConstNode(2));
+            p = new PlusNode();
+            p.AddChild(cos2);
+            p.AddChild(sin2);
+            p.Print();
+            Debug.Assert(Cos2Sin2Transform.Transform(p));
+            p.Print();
 
 
-            StringBuilder sb = new StringBuilder();
+            cos2 = new PowerNode(new CosNode(new VarNode("t")), new ConstNode(2));
+            sin2 = new PowerNode(new SinNode(new VarNode("t")), new ConstNode(2));
 
-            p.Format(sb);
-            var s = sb.ToString();
-            Console.WriteLine(s);
+            cp = new ProdNode();
+            sp = new ProdNode();
+
+            cp.AddChild(new ConstNode(4));
+            sp.AddChild(new ConstNode(4));
+
+            cp.AddChild(cos2);
+            sp.AddChild(sin2);
+
+            p = new PlusNode();
+            p.AddChild(cp);
+            p.AddChild(sp);
+            p.Print();
+            Debug.Assert(Cos2Sin2Transform.Transform(p));
+            p.Print();
+
+
         }
 
         static public void ProdNodeTest()

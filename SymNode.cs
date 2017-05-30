@@ -10,6 +10,9 @@ namespace SSMS
     // of SymNode that are not included.
     //
     // They are ordere by operation precedence.
+    //
+    // The convenetion will be to examine nodes by getthing their Type, instead of using
+    // the C# type systme. I.e: if (node.Type == NodeTypes.Var)
     enum NodeTypes
     {
         Constant,
@@ -109,6 +112,18 @@ namespace SSMS
         }
 
         public abstract SymNode DeepClone();
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            Format(sb);
+            return sb.ToString();
+        }
+
+        public void Print()
+        {
+            Console.WriteLine(ToString());
+        }
 
     }
 }

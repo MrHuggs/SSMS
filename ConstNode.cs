@@ -14,7 +14,7 @@ namespace SSMS
             Value = val;
         }
 
-        double Value;
+        public double Value;
 
         public override void Format(StringBuilder sb)
         {
@@ -23,7 +23,7 @@ namespace SSMS
 
         public override bool IsEqual(SymNode other)
         {
-            if (other.Type != NodeTypes.Var)
+            if (other.Type != NodeTypes.Constant)
                 return false;
 
             return ((ConstNode)other).Value == Value;

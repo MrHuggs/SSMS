@@ -44,8 +44,11 @@
   <ItemGroup>
     <Compile Include="ChildListNode.cs" />
     <Compile Include="CommutativeNode.cs" />
+    <Compile Include="ConstFoldTransform.cs" />
     <Compile Include="ConstNode.cs" />
+    <Compile Include="Cos2Sin2Transform.cs" />
     <Compile Include="CosNode.cs" />
+    <Compile Include="DistributiveTransform.cs" />
     <Compile Include="FunctionNode.cs" />
     <Compile Include="PlusNode.cs" />
     <Compile Include="PowerNode.cs" />
