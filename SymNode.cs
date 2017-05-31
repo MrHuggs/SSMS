@@ -85,7 +85,7 @@ namespace SSMS
 
     abstract class SymNode
     {
-    
+
         public abstract void Format(StringBuilder sb);
 
         public abstract bool IsEqual(SymNode other);
@@ -97,12 +97,14 @@ namespace SSMS
             set { _Type = value; }
         }
 
-        // Nodes can have children.
-        public virtual int ChildCount() { return 0;  }
-        public virtual SymNode GetChild(int idx)
-        {
-            Debug.Assert(false); return null;
-        }
+        // Nodes can have children, and these method provide a way to traverse them.
+        // Note that the order of the children depends on the type of node and lexial
+        // sorting of a the nodes. 
+        public virtual int ChildCount() { return 0; }
+        public virtual SymNode GetChild(int index) { Debug.Assert(false); return null; }
+        // Replace one node with another. If the replacement is null, the original is simply
+        // removed. If you replace a node with another, it may get sorted to a different spot:
+        public virtual void ReplaceChild(SymNode existing_child, SymNode new_child) { Debug.Assert(false); }
 
         // Compare another node for sorting. Return > 0 if this node should
         // come before the other.

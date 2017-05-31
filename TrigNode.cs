@@ -15,21 +15,21 @@ namespace SSMS
 
         public SymNode Angle;
 
-        public override int ChildCount()
+        public override int ChildCount() { return 1; }
+        public override SymNode GetChild(int index)
         {
-            return 1;
-        }
-
-        public override SymNode GetChild(int idx)
-        {
-            Debug.Assert(idx == 0);
+            Debug.Assert(index == 0);
             return Angle;
         }
+        public override void ReplaceChild(SymNode existing_child, SymNode new_child)
+        {
+            Debug.Assert(existing_child == Angle);
+            Debug.Assert(new_child != null);
+        }
 
-     
         public override bool IsEqual(SymNode other)
         {
-            if (other.Type != NodeTypes.Var)
+            if (other.Type != Type)
                 return false;
 
             return Angle.IsEqual(((CosNode)other).Angle);

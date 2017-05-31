@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SSMS
 {
@@ -19,6 +19,33 @@ namespace SSMS
         public SymNode Base;
         public SymNode Power;
 
+        public override int ChildCount() { return 2; }
+        public override SymNode GetChild(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    return Base;
+                case 1:
+                    return Power;
+                default:
+                    Debug.Assert(false);
+                    return null;
+            }
+        }
+        public override void ReplaceChild(SymNode existing_child, SymNode new_child)
+        {
+            // We must always have two arguments.
+            Debug.Assert(new_child != null);
+            if (existing_child == Base)
+                Base = new_child;
+            else
+            {
+                Debug.Assert(existing_child == Power);
+                Power = new_child;
+            }
+        }
+  
         public override void Format(StringBuilder sb)
         {
             sb.Append("(");

@@ -16,11 +16,20 @@ namespace SSMS
         public List<SymNode> Children = new List<SymNode>();
 
         public override int ChildCount() { return Children.Count; }
-        public override SymNode GetChild(int idx) { return Children[idx]; }
-        
+        public override SymNode GetChild(int index) { return Children[index]; }
+
+        public override void ReplaceChild(SymNode existing_child, SymNode new_child)
+        {
+            Children.Remove(existing_child);
+
+            if (new_child != null)
+                AddChild(new_child);
+        }
+
+        // Adds a child and sorts it into the correct spot:
         abstract public void AddChild(SymNode child);
 
-        public void RemoveChild(int index) { Children.RemoveAt(index);  }
+        public void RemoveChild(int index) { Children.RemoveAt(index); }
         public void RemoveLastChild() { Children.RemoveAt(Children.Count - 1);  }
 
         public override bool IsEqual(SymNode other)

@@ -10,8 +10,7 @@ namespace SSMS
     {
         static public bool Transform(SymNode node)
         {
-            // See if this is a proudct node that starts with constants that can be folded
-            // together.
+            // See if any of the childrend of this node constants that can be folded together.
 
             if (node.Type != NodeTypes.Prod)
                 return false;

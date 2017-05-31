@@ -29,6 +29,8 @@ namespace SSMS
             p.AddChild(new ConstNode(4));
 
             p.Print();
+            var dist_res = DistributiveTransform.TryDistributeProdNode(p);
+            dist_res.Print();
 
         }
 
