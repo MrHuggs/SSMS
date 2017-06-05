@@ -127,5 +127,28 @@ namespace SSMS
             Console.WriteLine(ToString());
         }
 
+        public void PrintValue()
+        {
+            var sb = new StringBuilder();
+            double res;
+            var b = Evaluate(sb, out res);
+            if (b)
+                Console.WriteLine(res);
+            else
+                Console.WriteLine(sb.ToString());
+        }
+
+        // Helper functions that can be used for simplification. These should be conserviative, i.e.,
+        // IsZero returns true if the result is guranteed to be 0, it could still be 0 even if the
+        // function returns false.
+        public virtual bool IsZero() { return false; }
+        public virtual bool IsOne() { return false; }
+
+        // Attempt to evaluate this expression to a numerical value.
+        // If evalation is successful, return true, and put value in result. 
+        // If evaluation faild, appent an explainiation to report, and the value of result is undefined.
+        // Evaluation can fail because a variable is unboound (e.g. x), or because the value is undefined
+        // (e.g. divide by 0, square root of -1).
+        public virtual bool Evaluate (StringBuilder report, out double result) { result = 0; return false;  }
     }
 }

@@ -28,9 +28,10 @@ namespace SSMS
             p.AddChild(plus_node);
             p.AddChild(new ConstNode(4));
 
-            p.Print();
+            p.PrintValue();
             var dist_res = DistributiveTransform.TryDistributeProdNode(p);
             dist_res.Print();
+            dist_res.PrintValue();
 
         }
 

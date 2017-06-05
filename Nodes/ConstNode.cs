@@ -38,5 +38,14 @@ namespace SSMS
         {
             return new ConstNode(Value);
         }
+
+        public override bool IsZero() { return Value == 0; }
+        public override bool IsOne() { return Value == 1; }
+        public override bool Evaluate(StringBuilder report, out double result)
+        {
+            result = Value;
+            return true;
+        }
+
     }
 }

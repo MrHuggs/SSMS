@@ -16,7 +16,7 @@ namespace SSMS
                 return null;
 
             double power;
-            if (!((PowerNode)node).GetFixedPower(out power))
+            if (!((PowerNode)node).GetFixedExponent(out power))
                 return null;
 
             if (power != 2)
@@ -127,7 +127,7 @@ namespace SSMS
 
         static public bool Transform(SymNode node)
         {
-            // See of the cos^2 + sin^2 = 1 transform can be applies to some of the
+            // See of the cos^2 + sin^2 = 1 transform can be applies to two of the
             // children of this node.
 
             // Step 1: It has to be a plus node

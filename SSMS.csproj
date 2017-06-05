@@ -42,23 +42,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChildListNode.cs" />
-    <Compile Include="CommutativeNode.cs" />
-    <Compile Include="ConstFoldTransform.cs" />
-    <Compile Include="ConstNode.cs" />
-    <Compile Include="Cos2Sin2Transform.cs" />
-    <Compile Include="CosNode.cs" />
-    <Compile Include="DistributiveTransform.cs" />
-    <Compile Include="FunctionNode.cs" />
-    <Compile Include="PlusNode.cs" />
-    <Compile Include="PowerNode.cs" />
-    <Compile Include="ProdNode.cs" />
+    <Compile Include="Nodes\ChildListNode.cs" />
+    <Compile Include="Nodes\CommutativeNode.cs" />
+    <Compile Include="Transforms\CombineProdTransform.cs" />
+    <Compile Include="Transforms\ConstFoldTransform.cs" />
+    <Compile Include="Nodes\ConstNode.cs" />
+    <Compile Include="Transforms\Cos2Sin2Transform.cs" />
+    <Compile Include="Nodes\CosNode.cs" />
+    <Compile Include="Transforms\DistributiveTransform.cs" />
+    <Compile Include="Nodes\FunctionNode.cs" />
+    <Compile Include="Nodes\PlusNode.cs" />
+    <Compile Include="Nodes\PowerNode.cs" />
+    <Compile Include="Nodes\ProdNode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SinNode.cs" />
-    <Compile Include="SymNode.cs" />
-    <Compile Include="TrigNode.cs" />
-    <Compile Include="VarNode.cs" />
+    <Compile Include="Nodes\SinNode.cs" />
+    <Compile Include="Nodes\SymNode.cs" />
+    <Compile Include="Nodes\TrigNode.cs" />
+    <Compile Include="Nodes\VarNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
