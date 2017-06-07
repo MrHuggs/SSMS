@@ -8,6 +8,8 @@ namespace SSMS
 {
     class ConstFoldTransform
     {
+
+
         static public bool Transform(SymNode node)
         {
             // See if any of the children of this node constants that can be folded together.

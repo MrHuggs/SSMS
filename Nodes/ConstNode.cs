@@ -41,10 +41,15 @@ namespace SSMS
 
         public override bool IsZero() { return Value == 0; }
         public override bool IsOne() { return Value == 1; }
-        public override bool Evaluate(StringBuilder report, out double result)
+
+        public override SymNode FoldConstants()
         {
-            result = Value;
-            return true;
+            return new ConstNode(Value);
+        }
+
+        public override SymNode Evaluate()
+        {
+            return new ConstNode(Value);
         }
 
     }

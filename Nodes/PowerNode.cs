@@ -100,72 +100,68 @@ namespace SSMS
             return true;
         }
 
-        public override bool Evaluate(StringBuilder report, out double result)
+        public override SymNode FoldConstants()
         {
-            result = 0;
-            double exp, pbase;
-            if (Base == null)
+            var new_exp = Exponent.FoldConstants();
+            var new_base = Base.FoldConstants();
+
+
+            if (new_exp.Type == NodeTypes.Constant)
             {
-                report.Append("Cannot evaluate power because base is missing.");
-                return false;
-            }
-            if (Exponent == null)
-            {
-                report.Append("Cannot evaluate power because exponent is missing.");
-                return false;
+                if (((ConstNode)new_exp).Value == 1)
+                    return new_base;
+                if (((ConstNode)new_exp).Value == 0)
+                    return new ConstNode(1);
             }
 
-            if (!Base.Evaluate(report, out pbase))
+            if (new_base.Type == NodeTypes.Constant)
             {
-                report.Append("Cannot evaluate power because base could not be evaluated.");
-                return false;
-            }
-            if (!Exponent.Evaluate(report, out exp))
-            {
-                report.Append("Cannot evaluate power because expononent could not be evaluated.");
-                return false;
+                if (((ConstNode)new_base).Value == 1)
+                    return new ConstNode(1);
             }
 
-            if (exp < 0)
-            {
-                if (pbase == 0)
-                {
-                    report.Append("Cannot evaluate power because base is 0 and exponent is negative.");
-                    return false;
-                }
-            }
-            if (exp != (int) exp)
-            {
-                if (pbase < 0)
-                {
-                    report.Append("Cannot evaluate power because base is negative and exponent is factional.");
-                    return false;
-                }
-            }
-
-            // Handle some special cases ot improve accuracy:
-            switch (exp)
-            {
-                case 0:
-                    result = 1;
-                    return true;
-                case 1:
-                    result = pbase;
-                    return true;
-                case 2:
-                    result = pbase * pbase;
-                    return true;
-                case -1:
-                    result = 1 / pbase;
-                    return true;
-                case -2:
-                    result = 1 / (pbase * pbase);
-                    return true;
-                default:
-                    result = Math.Pow(pbase, exp);
-                    return true;
-            }
+            return new PowerNode(new_base, new_exp);
         }
 
+
+        public override SymNode Evaluate()
+        {
+            var new_exp = Exponent.Evaluate();
+            var new_base = Base.Evaluate();
+
+            if (new_exp.Type == NodeTypes.Constant &&
+                new_base.Type == NodeTypes.Constant)
+            {
+                double pbase = ((ConstNode)new_base).Value;
+
+                if (pbase == 1)
+                    return new ConstNode(1);
+
+                double exp = ((ConstNode)new_exp).Value;
+
+                if ((pbase == 0 && exp <= 0) ||
+                    (pbase <= 0 && (exp != ((int) exp))))
+                { 
+                    // Result is actually undefined, so can't do anything:
+                    new PowerNode(new_base, new_exp);
+                }
+
+                if (exp == 1)
+                    return new_base;
+
+                if (exp == 2)
+                    return new ConstNode(pbase * pbase);
+                if (exp == -1)
+                    return new ConstNode(1 / pbase);
+                if (exp == -2)
+                    return new ConstNode(1 / (pbase * pbase));
+
+                return new ConstNode(Math.Pow(pbase, exp));
+            }
+
+            var temp_node = new PowerNode(new_base, new_exp);
+            return temp_node.FoldConstants();
+        }
+        
     }
 }

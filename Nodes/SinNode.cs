@@ -27,21 +27,26 @@ namespace SSMS
             return (Angle == null) ? false : Angle.IsOne();
         }
 
-        public override bool Evaluate(StringBuilder report, out double result)
+
+        public override SymNode FoldConstants()
         {
-            if (Angle == null)
+            var new_angle = Angle.FoldConstants();
+            if (new_angle.IsZero())
+                return new ConstNode(0);
+
+            return new SinNode(new_angle);
+        }
+
+        public override SymNode Evaluate()
+        {
+            var new_angle = Angle.Evaluate();
+
+            if (new_angle.Type == NodeTypes.Constant)
             {
-                report.Append("Cannot evaluate sine because angle is missing.");
-                result = 0;
-                return false;
+                double s = Math.Sin(((ConstNode)new_angle).Value);
+                return new ConstNode(s);
             }
-            if (!Angle.Evaluate(report, out result))
-            {
-                report.Append("Cannot evaluate sine because angle could not be evaluated.");
-                return false;
-            }
-            result = Math.Sin(result);
-            return true;
+            return new SinNode(new_angle);
         }
     }
 

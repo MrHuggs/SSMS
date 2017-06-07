@@ -13,10 +13,30 @@ namespace SSMS
     {
         static void Main(string[] args)
         {
+            EvaluateTest();
             DistributiveTransformTest();
             ConstFoldTransformTest();
             Cos2TransfromTest();
             ProdNodeTest();
+        }
+
+        static public void EvaluateTest()
+        {
+            PlusNode plus_node = new PlusNode();
+            plus_node.AddChild(new ConstNode(4));
+            plus_node.AddChild(new ConstNode(5));
+
+            plus_node.PrintValue();
+
+            ProdNode prod_node = new ProdNode();
+            prod_node.AddChild(new ConstNode(6));
+            prod_node.AddChild(new VarNode("x"));
+            prod_node.AddChild(new ConstNode(-7));
+            prod_node.PrintValue();
+
+            plus_node.AddChild(prod_node);
+            plus_node.PrintValue();
+
         }
 
         static  public void DistributiveTransformTest()
@@ -25,6 +45,7 @@ namespace SSMS
             PlusNode plus_node = new PlusNode();
             plus_node.AddChild(new VarNode("a"));
             plus_node.AddChild(new VarNode("b"));
+            plus_node.PrintValue();
             p.AddChild(plus_node);
             p.AddChild(new ConstNode(4));
 

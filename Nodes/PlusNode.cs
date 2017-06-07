@@ -16,14 +16,28 @@ namespace SSMS
         public override void Format(StringBuilder sb)
         {
             bool first = true;
+            StringBuilder child_builder = new StringBuilder();
             foreach (var node in Children)
             {
-                if (first)
-                    first = false;
-                else
-                    sb.Append("+");
 
-                node.Format(sb);
+                node.Format(child_builder);
+                string child_string = child_builder.ToString();
+
+                if (first)
+                {
+                    first = false;
+                    if (child_string.StartsWith("+"))
+                        sb.Append(child_string.Substring(1));
+                    else
+                        sb.Append(child_string);
+                }
+                else
+                {
+                    if (!(child_string.StartsWith("+") || child_string.StartsWith("-")))
+                        sb.Append("+");
+                    sb.Append(child_string);
+                }
+                child_builder.Clear();
             }
         }
 
@@ -59,31 +73,53 @@ namespace SSMS
             }
             return sum == 1;
         }
-        public override bool Evaluate(StringBuilder report, out double result)
+
+        public override SymNode FoldConstants()
         {
-            result = 0;
-            if (Children.Count == 0)
-            {
-                report.Append("Cannot evaluate summatation node because it has no terms.");
-                return false;
-            }
+            var new_node = new PlusNode();
 
-            double temp;
-            bool success = true;
-
-            foreach (var child in Children)
+            double sum = 0;
+            foreach (var node in Children)
             {
-                if (child.Evaluate(report, out temp))
-                    result += temp;
+                var new_child = node.FoldConstants();
+                if (new_child.IsZero())
+                    continue;
+
+                if (new_child.Type == NodeTypes.Constant)
+                {
+                    sum += ((ConstNode)new_child).Value;
+                }
                 else
-                    success = false;
+                {
+                    new_node.AddChild(new_child);
+                }
             }
-            if (!success)
-                report.Append("Cannot evaluate summatation node because one or more terms could not be evaluated.");
 
-            return success;
+            if (new_node.Children.Count == 0)
+                return new ConstNode(sum);
+
+            if (sum == 0)
+            {
+                return new_node;
+            }
+
+            new_node.AddChild(new ConstNode(sum));
+            return new_node;
 
         }
 
+
+        public override SymNode Evaluate()
+        {
+            var new_node = new PlusNode();
+
+            foreach (var node in Children)
+            {
+                new_node.AddChild(node.Evaluate());
+            }
+
+            return new_node.FoldConstants();
+        }
     }
+
 }

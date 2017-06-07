@@ -129,13 +129,8 @@ namespace SSMS
 
         public void PrintValue()
         {
-            var sb = new StringBuilder();
-            double res;
-            var b = Evaluate(sb, out res);
-            if (b)
-                Console.WriteLine(res);
-            else
-                Console.WriteLine(sb.ToString());
+            var node = Evaluate();
+            node.Print();
         }
 
         // Helper functions that can be used for simplification. These should be conserviative, i.e.,
@@ -144,11 +139,15 @@ namespace SSMS
         public virtual bool IsZero() { return false; }
         public virtual bool IsOne() { return false; }
 
-        // Attempt to evaluate this expression to a numerical value.
-        // If evalation is successful, return true, and put value in result. 
-        // If evaluation faild, appent an explainiation to report, and the value of result is undefined.
-        // Evaluation can fail because a variable is unboound (e.g. x), or because the value is undefined
-        // (e.g. divide by 0, square root of -1).
-        public virtual bool Evaluate (StringBuilder report, out double result) { result = 0; return false;  }
+        // Return a node representing this node if constant folding is allows. This means
+        // addition, multiplication, and division are allowed.
+        public abstract SymNode FoldConstants();
+
+        // Return a node repesenting this node (and it's children) if numerial calculation is performed.
+        // So, for example, a cos node with a constant argument of .1 would return a constant node
+        // of value 0.99999847691328769880290124792571.
+        // If nummerical errors would occur (for example, divide by 0), the arguments are left alone.
+        public abstract SymNode Evaluate();
+    
     }
 }

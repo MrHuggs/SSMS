@@ -39,5 +39,15 @@ namespace SSMS
             return new VarNode(Var);
         }
 
+        public override SymNode FoldConstants()
+        {
+            return new VarNode(Var);
+        }
+
+        public override SymNode Evaluate()
+        {
+            return new VarNode(Var);
+        }
+
     }
 }

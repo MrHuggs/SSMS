@@ -70,31 +70,51 @@ namespace SSMS
             return true;
         }
 
-        public override bool Evaluate(StringBuilder report, out double result)
+             public override SymNode FoldConstants()
         {
-            result = 1;
+            var new_node = new ProdNode();
 
-            if (Children.Count == 0)
+            double product = 1;
+            foreach(var node in Children)
             {
-                report.Append("Cannot evaluate product node because it has no terms.");
-                return false;
-            }
+                var new_child = node.FoldConstants();
+                if (new_child.IsZero())
+                    return new ConstNode(0);
+                if (new_child.IsOne())
+                    continue;
 
-            double temp;
-            bool success = true;
-
-            foreach (var child in Children)
-            {
-                if (child.Evaluate(report, out temp))
-                    result *= temp;
+                if (new_child.Type == NodeTypes.Constant)
+                {
+                    product *= ((ConstNode)new_child).Value;
+                }
                 else
-                    success = false;
+                {
+                    new_node.AddChild(new_child);
+                }
             }
-            if (!success)
-                report.Append("Cannot evaluate product node because one or more terms could not be evaluated.");
 
-            return success;
+            var const_node = new ConstNode(product);
+
+            if (new_node.Children.Count == 0)
+                return const_node;
+
+            new_node.AddChild(const_node);
+            return new_node;
 
         }
+
+
+        public override SymNode Evaluate()
+        {
+            var new_node = new ProdNode();
+
+            foreach(var node in Children)
+            {
+                new_node.AddChild(node.Evaluate());
+            }
+
+            return new_node.FoldConstants();
+        }
+
     }
 }
