@@ -71,7 +71,7 @@ namespace SSMS
             Debug.Assert(!ConstFoldTransform.Transform(p));
             p.AddChild(new ConstNode(-1));
             Debug.Assert(ConstFoldTransform.Transform(p));
-            Debug.Assert(p.ToString() == "16 a");
+            Debug.Assert(p.ToString() == "16a");
 
             p.AddChild(new ConstNode(1.0/ 16.0));
             Debug.Assert(ConstFoldTransform.Transform(p));
@@ -141,22 +141,15 @@ namespace SSMS
             n.AddChild(new VarNode("d"));
             n.AddChild(new VarNode("c"));
 
-            StringBuilder sb = new StringBuilder();
+            n.Print();
 
-            n.Format(sb);
-            var s = sb.ToString();
-            Console.WriteLine(s);
-
-            Debug.Assert(s == "a b c d");
+            //Debug.Assert(s == "a b c d");
 
             n.AddChild(new ConstNode(24));
             n.AddChild(new ConstNode(-3));
             n.AddChild(new VarNode("ab"));
 
-            sb.Clear();
-            n.Format(sb);
-            s = sb.ToString();
-            Console.WriteLine(s);
+            n.Print();
 
             var p = new PlusNode();
             p.AddChild(new VarNode("b"));
@@ -170,10 +163,7 @@ namespace SSMS
 
             n.AddChild(power_node);
 
-            sb.Clear();
-            n.Format(sb);
-            s = sb.ToString();
-            Console.WriteLine(s);
+            n.Print();
 
         }
     }

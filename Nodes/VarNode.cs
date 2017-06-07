@@ -16,9 +16,20 @@ namespace SSMS
 
         String Var;
 
-        public override void Format(StringBuilder sb)
+        public override void Format(FormatBuilder fb)
         {
-            sb.Append(Var);
+            // We don't put a * between multiplied terms, so we need to parenthesize
+            // and multichar variables so that ab can be distiguished from a * b.
+            if (Var.Length > 1)
+            {
+                fb.BeginParen();
+                fb.Append(Var);
+                fb.EndParen();
+            }
+            else
+            {
+                fb.Append(Var);
+            }
         }
 
         public override bool IsEqual(SymNode other)

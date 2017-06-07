@@ -86,7 +86,7 @@ namespace SSMS
     abstract class SymNode
     {
 
-        public abstract void Format(StringBuilder sb);
+        public abstract void Format(FormatBuilder fb);
 
         public abstract bool IsEqual(SymNode other);
 
@@ -117,7 +117,7 @@ namespace SSMS
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = new FormatBuilder();
             Format(sb);
             return sb.ToString();
         }

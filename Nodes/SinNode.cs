@@ -13,12 +13,12 @@ namespace SSMS
             Type = NodeTypes.Sin;
         }
 
-        public override void Format(StringBuilder sb)
+        public override void Format(FormatBuilder fb)
         {
-            sb.Append("sin(");
+            fb.BeginParen();
             if (ChildCount() > 0)
-                Angle.Format(sb);
-            sb.Append(")");
+                Angle.Format(fb);
+            fb.EndParen();
         }
 
         // Since we cannot represent pi/2 exactly, we cannot handle IsOne.

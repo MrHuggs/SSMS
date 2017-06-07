@@ -16,9 +16,9 @@ namespace SSMS
 
         public double Value;
 
-        public override void Format(StringBuilder sb)
+        public override void Format(FormatBuilder fb)
         {
-            sb.Append(Value);
+            fb.Append(Value);
         }
 
         public override bool IsEqual(SymNode other)

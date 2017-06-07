@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormatBuilder.cs" />
     <Compile Include="Nodes\ChildListNode.cs" />
     <Compile Include="Nodes\CommutativeNode.cs" />
     <Compile Include="Transforms\CombineProdTransform.cs" />

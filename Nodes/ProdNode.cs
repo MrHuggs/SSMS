@@ -13,26 +13,30 @@ namespace SSMS
             Type = NodeTypes.Prod;
         }
 
-        public override void Format(StringBuilder sb)
+        public override void Format(FormatBuilder fb)
         {
-            bool first = true;
-            foreach (var node in Children)
+            for (int i = 0; i < Children.Count; i++)
             {
-                if (first)
-                    first = false;
-                else
-                    sb.Append(" ");
+                var node = Children[i];
 
-                if (node.Type > NodeTypes.Prod)
+                bool need_paren;
+
+                if (node.Type > NodeTypes.Prod && node.ChildCount() > 1)
+                    need_paren = true;
+                if (node.Type == NodeTypes.Constant && i > 0)
+                    need_paren = true;
+                else need_paren = false;
+
+                if (need_paren)
                 {
                     // If its lower precedence, then surround it by ():
-                    sb.Append("(");
-                    node.Format(sb);
-                    sb.Append(")");
+                    fb.Append("(");
+                    node.Format(fb);
+                    fb.Append(")");
                 }
                 else
                 {
-                    node.Format(sb);
+                    node.Format(fb);
                 }
             }
         }

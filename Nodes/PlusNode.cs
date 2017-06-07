@@ -13,30 +13,16 @@ namespace SSMS
             Type = NodeTypes.Plus;
         }
 
-        public override void Format(StringBuilder sb)
+        public override void Format(FormatBuilder fb)
         {
-            bool first = true;
-            StringBuilder child_builder = new StringBuilder();
+            FormatBuilder child_builder = new FormatBuilder();
             foreach (var node in Children)
             {
-
+                fb.Append('+');
                 node.Format(child_builder);
                 string child_string = child_builder.ToString();
 
-                if (first)
-                {
-                    first = false;
-                    if (child_string.StartsWith("+"))
-                        sb.Append(child_string.Substring(1));
-                    else
-                        sb.Append(child_string);
-                }
-                else
-                {
-                    if (!(child_string.StartsWith("+") || child_string.StartsWith("-")))
-                        sb.Append("+");
-                    sb.Append(child_string);
-                }
+                fb.Append(child_string);
                 child_builder.Clear();
             }
         }

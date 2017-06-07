@@ -46,14 +46,16 @@ namespace SSMS
             }
         }
   
-        public override void Format(StringBuilder sb)
+        public override void Format(FormatBuilder fb)
         {
-            sb.Append("(");
-            Base.Format(sb);
-            sb.Append(")");
-            sb.Append("^(");
-            Exponent.Format(sb);
-            sb.Append(")");
+            fb.BeginParen();
+            Base.Format(fb);
+            fb.EndParen();
+
+            fb.Append("^");
+            fb.BeginParen();
+            Exponent.Format(fb);
+            fb.EndParen();
         }
 
         public override bool IsEqual(SymNode other)
