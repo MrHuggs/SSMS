@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class SinNode : TrigNode
+    public class SinNode : TrigNode
     {
         public SinNode(SymNode angle) : base (angle)
         {
@@ -15,16 +15,16 @@ namespace SSMS
 
         public override void Format(FormatBuilder fb)
         {
-            fb.BeginParen();
+            fb.Append("sin(");
             if (ChildCount() > 0)
                 Angle.Format(fb);
-            fb.EndParen();
+            fb.Append(')');
         }
 
         // Since we cannot represent pi/2 exactly, we cannot handle IsOne.
         public override bool IsZero()
         {
-            return (Angle == null) ? false : Angle.IsOne();
+            return Angle.IsZero();
         }
 
 

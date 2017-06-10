@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace SSMS
 {
-    class PowerNode : SymNode
+    public class PowerNode : SymNode
     {
         public PowerNode(SymNode ebase, SymNode power)
         {
@@ -48,14 +48,11 @@ namespace SSMS
   
         public override void Format(FormatBuilder fb)
         {
-            fb.BeginParen();
-            Base.Format(fb);
-            fb.EndParen();
+            fb.Append(Base.ToString(), Base.Type >= NodeTypes.Power);
 
             fb.Append("^");
-            fb.BeginParen();
-            Exponent.Format(fb);
-            fb.EndParen();
+
+            fb.Append(Exponent.ToString(), Exponent.Type >= NodeTypes.Power);
         }
 
         public override bool IsEqual(SymNode other)

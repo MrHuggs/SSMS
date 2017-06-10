@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class ConstNode : SymNode
+    public class ConstNode : SymNode
     {
         public ConstNode(double val)
         {

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SSMS
 {
-    abstract class CommutativeNode : ChildListNode
+    public abstract class CommutativeNode : ChildListNode
     {
         // This is a base class for a node that has a bunch children that are related
         // through a commutative operation (e.g. multiplication, addition).
@@ -14,6 +15,8 @@ namespace SSMS
 
         public override void AddChild(SymNode child)
         {
+            Debug.Assert(!Children.Contains(child));
+
             int i = 0;
 
             var sort_val = child.GetSortVal();

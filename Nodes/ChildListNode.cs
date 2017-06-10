@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    abstract class ChildListNode : SymNode
+    public abstract class ChildListNode : SymNode
     {
         // A node that has multiple children kept in a list
         // Depending on the subclass, the list may or may not be able to be 
@@ -30,6 +30,7 @@ namespace SSMS
         abstract public void AddChild(SymNode child);
 
         public void RemoveChild(int index) { Children.RemoveAt(index); }
+        public void RemoveChild(SymNode node) { Children.Remove(node); }
         public void RemoveLastChild() { Children.RemoveAt(Children.Count - 1);  }
 
         public override bool IsEqual(SymNode other)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class PlusNode : CommutativeNode
+    public class PlusNode : CommutativeNode
     {
         public PlusNode()
         {
@@ -47,17 +47,17 @@ namespace SSMS
         }
         public override bool IsOne()
         {
-            int sum = 0;
+            int one_count = 0;
+            int non_zero_count = 0;
             foreach (var child in Children)
             {
+
                 if (child.IsOne())
-                {
-                    if (sum == 1)
-                        return false;
-                    sum++;
-                }
+                    one_count++;
+                else if (!child.IsZero())
+                    non_zero_count++;
             }
-            return sum == 1;
+            return one_count == 1 && non_zero_count == 0;
         }
 
         public override SymNode FoldConstants()

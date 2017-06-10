@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class ProdNode : CommutativeNode
+    public class ProdNode : CommutativeNode
     {
         public ProdNode()
         {
@@ -17,27 +17,22 @@ namespace SSMS
         {
             for (int i = 0; i < Children.Count; i++)
             {
+                if (i > 0)
+                    fb.Append('*');
+
                 var node = Children[i];
 
+                // Decide if the child needs to be parenthesized. We'll just use the
+                // operator precendece. This does mean you could see results like
+                // -34*-32.
                 bool need_paren;
-
-                if (node.Type > NodeTypes.Prod && node.ChildCount() > 1)
-                    need_paren = true;
-                if (node.Type == NodeTypes.Constant && i > 0)
-                    need_paren = true;
+                if (node.Type >= NodeTypes.Prod)
+                {
+                    need_paren = true;  // Child has lower precedence.
+                }
                 else need_paren = false;
 
-                if (need_paren)
-                {
-                    // If its lower precedence, then surround it by ():
-                    fb.Append("(");
-                    node.Format(fb);
-                    fb.Append(")");
-                }
-                else
-                {
-                    node.Format(fb);
-                }
+                fb.Append(node.ToString(), need_paren);
             }
         }
 

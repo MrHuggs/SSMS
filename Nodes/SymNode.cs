@@ -13,7 +13,7 @@ namespace SSMS
     //
     // The convenetion will be to examine nodes by getthing their Type, instead of using
     // the C# type systme. I.e: if (node.Type == NodeTypes.Var)
-    enum NodeTypes
+    public enum NodeTypes
     {
         Constant,
         Var,
@@ -26,7 +26,7 @@ namespace SSMS
         Plus,
     };
 
-    struct NodeSortVal
+    public struct NodeSortVal
     {
         public NodeSortVal(NodeTypes type)
         {
@@ -83,7 +83,7 @@ namespace SSMS
         }
     }
 
-    abstract class SymNode
+    public abstract class SymNode
     {
 
         public abstract void Format(FormatBuilder fb);
@@ -100,6 +100,7 @@ namespace SSMS
         // Nodes can have children, and these method provide a way to traverse them.
         // Note that the order of the children depends on the type of node and lexial
         // sorting of a the nodes. 
+        // The nodes should form a tree, so a child should never be added twice.
         public virtual int ChildCount() { return 0; }
         public virtual SymNode GetChild(int index) { Debug.Assert(false); return null; }
         // Replace one node with another. If the replacement is null, the original is simply
@@ -134,7 +135,7 @@ namespace SSMS
         }
 
         // Helper functions that can be used for simplification. These should be conserviative, i.e.,
-        // IsZero returns true if the result is guranteed to be 0, it could still be 0 even if the
+        // IsZero returns true if the result is GURANTEED to be 0, it could still be 0 even if the
         // function returns false.
         public virtual bool IsZero() { return false; }
         public virtual bool IsOne() { return false; }

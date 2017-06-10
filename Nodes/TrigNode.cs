@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace SSMS
 {
-    abstract class TrigNode : SymNode
+    public abstract class TrigNode : SymNode
     {
         public TrigNode(SymNode angle)
         {

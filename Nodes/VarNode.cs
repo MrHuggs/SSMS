@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class VarNode : SymNode
+    public class VarNode : SymNode
     {
         public VarNode(String var)
         {
@@ -18,18 +18,7 @@ namespace SSMS
 
         public override void Format(FormatBuilder fb)
         {
-            // We don't put a * between multiplied terms, so we need to parenthesize
-            // and multichar variables so that ab can be distiguished from a * b.
-            if (Var.Length > 1)
-            {
-                fb.BeginParen();
-                fb.Append(Var);
-                fb.EndParen();
-            }
-            else
-            {
-                fb.Append(Var);
-            }
+            fb.Append(Var);
         }
 
         public override bool IsEqual(SymNode other)

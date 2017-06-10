@@ -7,58 +7,42 @@ using System.Diagnostics;
 namespace SSMS
 {
     // This is a replacement for string builder, used when we format expressions:
-    class FormatBuilder
+    public class FormatBuilder
     {
         StringBuilder Builder = new StringBuilder();
-        int ParenDepth = 0;
 
-        public void Append(string str)
+        public void Append(string str, bool parenthesize = false)
         {
-            Builder.Append(str);
+            if (parenthesize)
+            {
+                Builder.Append('(');
+                Builder.Append(str);
+                Builder.Append(')');
+            }
+            else
+                Builder.Append(str);
         }
 
-        public void Append<T>(T t)
+        public void Append<T>(T t, bool parenthesize = false)
         {
-            Builder.Append(t.ToString());
+            Append(t.ToString(), parenthesize);
         }
 
-        public void BeginParen()
-        {
-            ParenDepth++;
-            Builder.Append("(");
-        }
-
-        public void EndParen()
-        {
-            ParenDepth--;
-            Debug.Assert(ParenDepth >= 0);
-            Builder.Append(")");
-        }
 
         public void Clear()
         {
             Builder.Clear();
-            ParenDepth = 0;
         }
 
         public override string ToString()
         {
             string raw = Builder.ToString();
 
-            // Remove all white space:
-            raw = raw.Replace(" ", "");
-
             StringBuilder final_string = new StringBuilder();
 
             int l = raw.Length;
             int i = 0;
 
-            if (raw[0] == '(')      // If there is a leading parent, skip it.
-            {
-                i++;
-                l--;
-            }
-            
             for (;  i < l - 1; i++)
             {
                 // Turn +- and -= into just -:

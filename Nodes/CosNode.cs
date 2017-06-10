@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace SSMS
 {
-    class CosNode : TrigNode
+    public class CosNode : TrigNode
     {
         public CosNode(SymNode angle) : base (angle)
         {
@@ -15,17 +15,16 @@ namespace SSMS
 
         public override void Format(FormatBuilder fb)
         {
-            fb.Append("cos");
-            fb.BeginParen();
+            fb.Append("cos(");
             if (ChildCount() > 0)
                 Angle.Format(fb);
-            fb.EndParen();
+            fb.Append(')');
         }
 
         // Since we cannot represent pi/2 exactly, we cannot handle IsZero.
         public override bool IsOne()
         {
-            return (Angle == null) ? false : Angle.IsOne();
+            return Angle.IsZero();
         }
 
         public override SymNode FoldConstants()
