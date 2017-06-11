@@ -13,7 +13,13 @@ namespace SSMS
             Type = NodeTypes.Plus;
         }
 
-        public override void Format(FormatBuilder fb)
+        public PlusNode(params SymNode[] node_list) : this()
+        {
+            foreach (var node in node_list) 
+                AddChild(node);
+        }
+
+public override void Format(FormatBuilder fb)
         {
             FormatBuilder child_builder = new FormatBuilder();
             foreach (var node in Children)

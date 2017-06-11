@@ -98,8 +98,7 @@ namespace UnitTests
             Assert.AreEqual(false, plus.IsOne());
             Assert.AreEqual(false, plus.IsZero());
 
-
-
         }
+
     }
 }

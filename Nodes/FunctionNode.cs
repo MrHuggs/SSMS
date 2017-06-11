@@ -17,11 +17,6 @@ namespace SSMS
             Children.Add(child);
         }
 
-        public void RemoveChild(SymNode node)
-        {
-            Children.Remove(node);
-        }
-
         override public NodeSortVal GetSortVal()
         {
             return new NodeSortVal(Type);

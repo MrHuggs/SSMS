@@ -13,6 +13,12 @@ namespace SSMS
             Type = NodeTypes.Prod;
         }
 
+        public ProdNode(params SymNode[] node_list) : this()
+        {
+            foreach (var node in node_list)
+                AddChild(node);
+        }
+
         public override void Format(FormatBuilder fb)
         {
             for (int i = 0; i < Children.Count; i++)

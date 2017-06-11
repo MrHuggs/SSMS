@@ -104,22 +104,49 @@ namespace SSMS
             var new_exp = Exponent.FoldConstants();
             var new_base = Base.FoldConstants();
 
+            if (new_exp.IsOne())
+                return new_base;
 
-            if (new_exp.Type == NodeTypes.Constant)
+            if (new_exp.IsZero() || new_base.IsOne())
+                return new ConstNode(1);
+
+
+            if (new_exp.Type != NodeTypes.Constant || new_base.Type != NodeTypes.Constant)
             {
-                if (((ConstNode)new_exp).Value == 1)
-                    return new_base;
-                if (((ConstNode)new_exp).Value == 0)
-                    return new ConstNode(1);
+                return new PowerNode(new_base, new_exp);
             }
 
-            if (new_base.Type == NodeTypes.Constant)
+            double exp = ((ConstNode)new_exp).Value;
+            double nbase = ((ConstNode)new_base).Value;
+            Debug.Assert(exp != 0 && exp != 1);
+
+            // See if we can evaluated the power to a rational result. We will try common
+            // powers.
+            double result;
+            switch (exp)
             {
-                if (((ConstNode)new_base).Value == 1)
-                    return new ConstNode(1);
+                case 2:
+                    result = nbase * nbase;
+                    break;
+                case 3:
+                    result = nbase * nbase * nbase;
+                    break;
+                case 4:
+                    result = nbase * nbase * nbase * nbase;
+                    break;
+                case -1:
+                    result = 1 / nbase;
+                    break;
+                case -2:
+                    result = 1 / (nbase * nbase);
+                    break;
+                default:
+                    return new PowerNode(new_base, new_exp);
             }
 
-            return new PowerNode(new_base, new_exp);
+            if (Double.IsInfinity(result) || Double.IsNaN(result))
+                return new PowerNode(new_base, new_exp);
+            return new ConstNode(result);
         }
 
 
@@ -128,38 +155,31 @@ namespace SSMS
             var new_exp = Exponent.Evaluate();
             var new_base = Base.Evaluate();
 
+            // Try to use the fold constants logic and see of the values can be folded to constant.
+            // This will be more accurate that using power.
+            var raw_new_node = new PowerNode(new_base, new_exp);
+            var new_node = raw_new_node.FoldConstants();
+
+            if (new_node.Type == NodeTypes.Constant)
+                return new_node;
+
+            Debug.Assert(new_node.Type == NodeTypes.Power);
+            
+
             if (new_exp.Type == NodeTypes.Constant &&
                 new_base.Type == NodeTypes.Constant)
             {
                 double pbase = ((ConstNode)new_base).Value;
-
-                if (pbase == 1)
-                    return new ConstNode(1);
-
                 double exp = ((ConstNode)new_exp).Value;
 
-                if ((pbase == 0 && exp <= 0) ||
-                    (pbase <= 0 && (exp != ((int) exp))))
-                { 
-                    // Result is actually undefined, so can't do anything:
-                    new PowerNode(new_base, new_exp);
+                double result = Math.Pow(pbase, exp);
+                if (!Double.IsInfinity(result) && !Double.IsNaN(result))
+                {
+                    return new ConstNode(result);
                 }
-
-                if (exp == 1)
-                    return new_base;
-
-                if (exp == 2)
-                    return new ConstNode(pbase * pbase);
-                if (exp == -1)
-                    return new ConstNode(1 / pbase);
-                if (exp == -2)
-                    return new ConstNode(1 / (pbase * pbase));
-
-                return new ConstNode(Math.Pow(pbase, exp));
             }
 
-            var temp_node = new PowerNode(new_base, new_exp);
-            return temp_node.FoldConstants();
+            return new_node;
         }
         
     }
