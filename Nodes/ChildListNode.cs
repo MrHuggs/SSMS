@@ -44,6 +44,7 @@ namespace SSMS
             if (ocount != Children.Count)
                 return false;
 
+            // Since order matters in the list, we can compare correspoding elements:
             for (int i = 0; i < ocount; i++)
             {
                 if (!Children[i].IsEqual(pnode.Children[i]))

@@ -15,11 +15,11 @@ namespace SSMS
 
         public PlusNode(params SymNode[] node_list) : this()
         {
-            foreach (var node in node_list) 
+            foreach (var node in node_list)
                 AddChild(node);
         }
 
-public override void Format(FormatBuilder fb)
+        public override void Format(FormatBuilder fb)
         {
             FormatBuilder child_builder = new FormatBuilder();
             foreach (var node in Children)

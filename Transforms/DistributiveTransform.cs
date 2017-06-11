@@ -6,8 +6,17 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class DistributiveTransform
+    class DistributiveTransform : NodeTransform
     {
+        TransformAttributes[] _Attributes = { TransformAttributes.Expand };
+        public override TransformAttributes[] Attributes { get; }
+
+        public override SymNode Apply(SymNode start_node)
+        {
+            return null;
+        }
+
+
         static public PlusNode TryDistributeProdNode(ProdNode prod_node)
         {
             // When passed in a product node, see if contains a plus node that can be

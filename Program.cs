@@ -57,7 +57,7 @@ namespace SSMS
         }
 
         static public void ConstFoldTransformTest()
-        {
+        {/*
             ProdNode p = new ProdNode();
 
             p.AddChild(new ConstNode(4));
@@ -81,7 +81,7 @@ namespace SSMS
             p.AddChild(new ConstNode(0));
             Debug.Assert(ConstFoldTransform.Transform(p));
             Debug.Assert(p.ToString() == "0");
-
+            */
         }
 
 

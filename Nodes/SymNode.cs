@@ -88,8 +88,6 @@ namespace SSMS
 
         public abstract void Format(FormatBuilder fb);
 
-        public abstract bool IsEqual(SymNode other);
-
         NodeTypes _Type;
         public NodeTypes Type
         {
@@ -106,6 +104,11 @@ namespace SSMS
         // Replace one node with another. If the replacement is null, the original is simply
         // removed. If you replace a node with another, it may get sorted to a different spot:
         public virtual void ReplaceChild(SymNode existing_child, SymNode new_child) { Debug.Assert(false); }
+
+        // Perforrm a deep equals check BY VALUE: Returns true if this and its children have the same values
+        // as other and its children.
+        public abstract bool IsEqual(SymNode other);
+
 
         // Compare another node for sorting. Return > 0 if this node should
         // come before the other.
@@ -150,5 +153,59 @@ namespace SSMS
         // If nummerical errors would occur (for example, divide by 0), the arguments are left alone.
         public abstract SymNode Evaluate();
     
+    }
+
+
+    public class TreeIterator
+    {
+        // Iterate the the nodes of SymNode tree in Depth First, post-order
+        // https://en.wikipedia.org/wiki/Tree_traversal#Post-order
+        //
+
+
+        public TreeIterator(SymNode root)
+        {
+            StackEntry entry = new StackEntry();
+            entry.Node = root;
+            entry.ChildIndex = 0;
+            Stack.Add(entry);
+        }
+
+        class StackEntry
+        {
+            public SymNode Node;
+            public int ChildIndex;
+        };
+
+        List<StackEntry> Stack = new List<StackEntry>();
+
+        public SymNode Next()
+        {
+            if (Stack.Count == 0)
+                return null;
+
+            while (true)
+            {
+
+                SymNode result;
+                StackEntry top = Stack.Last();
+
+                if (top.ChildIndex == top.Node.ChildCount())
+                {
+                    result = top.Node;
+                    Stack.Remove(top);
+                    return result;
+                }
+                else
+                {
+                    var new_top = new StackEntry();
+                    new_top.Node = top.Node.GetChild(top.ChildIndex);
+                    new_top.ChildIndex = 0;
+                    Stack.Add(new_top);
+
+                    top.ChildIndex++;
+                }
+            }
+        }
     }
 }

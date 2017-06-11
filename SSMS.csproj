@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FormatBuilder.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Nodes\ChildListNode.cs" />
     <Compile Include="Nodes\CommutativeNode.cs" />
     <Compile Include="Transforms\CombineProdTransform.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Nodes\SymNode.cs" />
     <Compile Include="Nodes\TrigNode.cs" />
     <Compile Include="Nodes\VarNode.cs" />
+    <Compile Include="Transforms\NodeTransform.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
