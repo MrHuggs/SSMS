@@ -6,7 +6,7 @@ using SSMS;
 namespace UnitTests
 {
     [TestFixture]
-    public class ConstantFolding
+    public class ConstantFoldingTests
     {
 
         [TestCase]
@@ -61,6 +61,12 @@ namespace UnitTests
             enode = new PowerNode(c10, c0);
             folded = enode.FoldConstants();
             Assert.AreEqual("1", folded.ToString());
+
+            prod = new ProdNode();
+            prod.AddChild(a);
+            prod.AddChild(b);
+            folded = prod.FoldConstants();
+            Assert.AreEqual("a*b", folded.ToString());
         }
 
         [TestCase]

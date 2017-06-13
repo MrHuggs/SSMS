@@ -57,7 +57,7 @@ namespace SSMS
 
         public override bool IsEqual(SymNode other)
         {
-            if (other.Type != NodeTypes.Var)
+            if (other.Type != NodeTypes.Power)
                 return false;
 
             PowerNode pnode = (PowerNode)other;

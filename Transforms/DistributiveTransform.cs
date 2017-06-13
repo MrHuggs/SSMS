@@ -6,13 +6,18 @@ using System.Threading.Tasks;
 
 namespace SSMS
 {
-    class DistributiveTransform : NodeTransform
+    public class DistributiveTransform : NodeTransform
     {
         TransformAttributes[] _Attributes = { TransformAttributes.Expand };
-        public override TransformAttributes[] Attributes { get; }
+        public override TransformAttributes[] Attributes { get { return _Attributes; } }
 
         public override SymNode Apply(SymNode start_node)
         {
+            if (start_node.Type == NodeTypes.Prod)
+            {
+                return TryDistributeProdNode((ProdNode)start_node);
+            }
+
             return null;
         }
 
@@ -32,33 +37,24 @@ namespace SSMS
                     // Didn't fine a plus node, so nothing to do.
                     return null;
                 }
-
-                if (prod_node.GetChild(index).Type == NodeTypes.Plus)
+                var child = prod_node.GetChild(index);
+                if (child.Type == NodeTypes.Plus && child.ChildCount() > 1)
+                {
                     break;
+                }
             }
 
             PlusNode new_parent = new PlusNode();
             PlusNode existing_plus = (PlusNode) prod_node.GetChild(index);
             prod_node.RemoveChild(index);
 
-            SymNode child1 = existing_plus.GetChild(0);
-            existing_plus.RemoveChild(0);
-
-            SymNode child2;
-            if (existing_plus.ChildCount() == 1)
+            for (int i = 0; i < existing_plus.ChildCount(); i++)
             {
-                child2 = existing_plus.GetChild(0);
+                var prod = new ProdNode(existing_plus.GetChild(i).DeepClone(),
+                                prod_node.DeepClone()
+                                );
+                new_parent.AddChild(prod);
             }
-            else
-                child2 = existing_plus;
-
-            ProdNode new_prod = (ProdNode)prod_node.DeepClone();
-
-            prod_node.AddChild(child1);
-            new_prod.AddChild(child2);
-            new_parent.AddChild(prod_node);
-            new_parent.AddChild(new_prod);
-
             return new_parent;
         }
     }

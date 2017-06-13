@@ -49,6 +49,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Nodes\ChildListNode.cs" />
     <Compile Include="Nodes\CommutativeNode.cs" />
+    <Compile Include="Nodes\TreeIterator.cs" />
     <Compile Include="Transforms\CombineProdTransform.cs" />
     <Compile Include="Transforms\ConstFoldTransform.cs" />
     <Compile Include="Nodes\ConstNode.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Nodes\TrigNode.cs" />
     <Compile Include="Nodes\VarNode.cs" />
     <Compile Include="Transforms\NodeTransform.cs" />
+    <Compile Include="Transforms\Substitution.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

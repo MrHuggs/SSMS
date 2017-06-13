@@ -98,12 +98,14 @@ namespace SSMS
                 }
             }
 
-            var const_node = new ConstNode(product);
 
             if (new_node.Children.Count == 0)
-                return const_node;
+                return new ConstNode(product);
 
-            new_node.AddChild(const_node);
+            if (product != 1)
+            {
+                new_node.AddChild(new ConstNode(product));
+            }
             return new_node;
 
         }

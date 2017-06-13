@@ -35,7 +35,7 @@ namespace SSMS
 
         public override bool IsEqual(SymNode other)
         {
-            if (other.Type != NodeTypes.Var)
+            if (other.Type != Type)
                 return false;
 
             CommutativeNode pnode = (CommutativeNode)other;
