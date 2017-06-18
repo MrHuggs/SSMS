@@ -16,6 +16,7 @@ namespace SSMS
     {
         //
         // A transform anylyzes a node, and if possible, transforms it to a new node.
+        // The original node should be unchanged.
         //
         // If transformation is possible, return the new node, otherwise, return null.
         // Regardless, start_node should be unchanged.
@@ -31,6 +32,7 @@ namespace SSMS
         static public NodeTransform[] Transforms =
         {
                 new ConstFoldTransform(),
+                new MergeTransform(),
                 new DistributiveTransform(),
         };
 
@@ -64,41 +66,68 @@ namespace SSMS
 
         SymNode ModifyTree(SymNode start_node, NodeTransform[] transforms)
         {
-            var temp_parent = new PlusNode(start_node.DeepClone());
+            SymNode new_version = start_node.DeepClone();
+            int change_count = 0;
+            bool transformed;
+
+            do
+            {
+                transformed = false;
+                foreach (var t in transforms)
+                {
+                    var updated = ApplyTransform(t, new_version);
+
+                    if (updated != null)
+                    {
+                        new_version = updated;
+                        change_count++;
+                        transformed = true;
+                        break;
+                    }
+                }
+            } while (transformed == true);
+           
+
+            if (change_count > 0)
+                return new_version;
+
+            return null;
+        }
+
+        // Private helper - apply a transform to start_node which is allowed to be
+        // modified. 
+        // Return a new base node if any transform took place, or null if there
+        // was no change.  
+        SymNode ApplyTransform(NodeTransform t, SymNode start_node)
+        {
+            var temp_parent = new PlusNode();
+            temp_parent.AddChild(start_node);
+
             var it = new TreeIterator(temp_parent);
 
             while (it.Next())
             {
                 SymNode node = it.Cur;
-
-                bool transformed;
-                do
+                for (int i = 0; i < node.ChildCount(); i++)
                 {
-                    transformed = false;
-                    for (int i = 0; i < node.ChildCount(); i++)
-                    {
-                        var child = node.GetChild(i);
-                        foreach (var t in transforms)
-                        {
-                            var new_child = t.Apply(child);
+                    var child = node.GetChild(i);
+                    var new_child = t.Apply(child);
 
-                            if (new_child != null)
-                            {
-                                node.ReplaceChild(child, new_child);
-                                transformed = true;
-                                break;
-                            }
-                        }
-                        if (transformed)
-                            break;
+                    if (new_child != null)
+                    {
+                        //Debug.WriteLine("Transformed:");
+                        //Debug.WriteLine(child.ToString());
+                        //Debug.WriteLine(new_child.ToString());
+
+                        node.ReplaceChild(child, new_child);
+                        return temp_parent.GetChild(0);
                     }
                 }
-                while (transformed);
             }
+            return null;
 
-            return temp_parent.GetChild(0);
         }
-    
+
     }
 
 }

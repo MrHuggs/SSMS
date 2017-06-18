@@ -61,12 +61,60 @@ namespace UnitTests
             enode = new PowerNode(c10, c0);
             folded = enode.FoldConstants();
             Assert.AreEqual("1", folded.ToString());
+        }
+
+        [TestCase]
+        public void PlusMergeTest()
+        {
+            ProdNode prod;
+            PlusNode plus;
+            SymNode folded, merged;
+            var a = new VarNode("a");
+            var b = new VarNode("b");
 
             prod = new ProdNode();
             prod.AddChild(a);
             prod.AddChild(b);
             folded = prod.FoldConstants();
             Assert.AreEqual("a*b", folded.ToString());
+
+            plus = new PlusNode(a, a.DeepClone(), a.DeepClone(), a.DeepClone());
+            Assert.AreEqual("a+a+a+a", plus.ToString());
+            merged = plus.Merge();
+            Assert.AreEqual("4*a", merged.ToString());
+
+            prod = new ProdNode(a, new ConstNode(-1));
+            plus = new PlusNode(prod, a);
+            Assert.AreEqual("-a+a", plus.ToString());
+            merged = plus.Merge();
+            Assert.AreEqual("0", merged.ToString());
+
+            plus = new PlusNode(prod, a.DeepClone());
+            plus.AddChild(new PlusNode(a, a.DeepClone()));
+            Assert.AreEqual("-a+a+a+a", plus.ToString());
+            merged = plus.Merge();
+            Assert.AreEqual("2*a", merged.ToString());
+
+        }
+
+        [TestCase]
+        public void ProdMergeTest()
+        {
+            ProdNode prod;
+            PlusNode plus;
+            SymNode folded, merged;
+            var a = new VarNode("a");
+            var at1 = new PowerNode(a.DeepClone(), new ConstNode(1));
+ 
+            prod = new ProdNode(a, a.DeepClone());
+            merged = prod.Merge();
+            Assert.AreEqual("a^2", merged.ToString());
+
+            prod = new ProdNode(a, at1);
+            merged = prod.Merge();
+            Assert.AreEqual("a^(1+1)", merged.ToString());
+            folded = merged.FoldConstants();
+            Assert.AreEqual("a^2", folded.ToString());
         }
 
         [TestCase]

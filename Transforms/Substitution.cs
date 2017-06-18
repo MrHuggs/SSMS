@@ -10,7 +10,11 @@ namespace SSMS
     {
         public static SymNode Substitute(SymNode root, SymNode target, SymNode replacement)
         {
-            var temp_parent = new PlusNode(root.DeepClone());
+            // Create a temporary plus node for the iterator. Since it has only a single child
+            // it's not in a valid state.
+            var temp_parent = new PlusNode();
+            temp_parent.AddChild(root.DeepClone()); 
+
             var it = new TreeIterator(temp_parent);
 
             SymNode node;

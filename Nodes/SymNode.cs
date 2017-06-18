@@ -96,7 +96,7 @@ namespace SSMS
         }
 
         // Nodes can have children, and these method provide a way to traverse them.
-        // Note that the order of the children depends on the type of node and lexial
+        // Note that the order of the children depends on the type of node and lexical
         // sorting of a the nodes. 
         // The nodes should form a tree, so a child should never be added twice.
         public virtual int ChildCount() { return 0; }
@@ -105,7 +105,7 @@ namespace SSMS
         // removed. If you replace a node with another, it may get sorted to a different spot:
         public virtual void ReplaceChild(SymNode existing_child, SymNode new_child) { Debug.Assert(false); }
 
-        // Perforrm a deep equals check BY VALUE: Returns true if this and its children have the same values
+        // Perform a deep equality check BY VALUE: Returns true if this and its children have the same values
         // as other and its children.
         public abstract bool IsEqual(SymNode other);
 
@@ -152,7 +152,12 @@ namespace SSMS
         // of value 0.99999847691328769880290124792571.
         // If nummerical errors would occur (for example, divide by 0), the arguments are left alone.
         public abstract SymNode Evaluate();
-    
+
+
+        // Merge children together, or possibly into this node, and return a new node (with new children)
+        // if any merging was done. Note that the type of node may change.
+        // This is best done after constants have been folded.
+        public virtual SymNode Merge() { return null; }
     }
 
 

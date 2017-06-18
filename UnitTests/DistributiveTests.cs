@@ -8,8 +8,8 @@ namespace UnitTests
     [TestFixture]
     public class DistributiveTests
     {
-        DistributiveTransform trans = new DistributiveTransform();
-
+        DistributiveTransform dist_trans = new DistributiveTransform();
+        TransformsList tlist = new TransformsList();
 
         [TestCase]
         public void SimpleDistributive()
@@ -22,7 +22,7 @@ namespace UnitTests
             var plus = new PlusNode(b, c);
             var prod = new ProdNode(a, plus);
 
-            var result = trans.Apply(prod);
+            var result = dist_trans.Apply(prod);
 
             Assert.AreEqual("a*b+a*c", result.ToString());
 
@@ -35,16 +35,17 @@ namespace UnitTests
             SymNode result;
 
             // Starting expression is (a+b)*(c+d*e+f)*cos(g^h)
-            result = trans.Apply(exp.Root);
-            Assert.AreEqual("a*((c+d*e+f)*cos(g^h))+b*((c+d*e+f)*cos(g^h))", result.ToString());
+            result = dist_trans.Apply(exp.Root);
+            Assert.AreEqual("a*(c+d*e+f)*cos(g^h)+b*(c+d*e+f)*cos(g^h)", result.ToString());
 
-            result = TransformsList.Inst().Expand(result);
-            var _result = TransformsList.Inst().Expand(result);
+            var expanded  = tlist.Expand(exp.Root);
+            var merged = tlist.Simplify(expanded);
             //
             // ***************************************************************
             // Need to add merging of prod nodes and sum nodes
             //
-            Assert.AreEqual("(a*c+a*d*e+a*f)*cos(g^h)+(b*c+b*d*e+b*f)*cos(g^h)", result.ToString());
+            Assert.AreEqual("a*c*cos(g^h)+a*d*e*cos(g^h)+a*f*cos(g^h)+b*c*cos(g^h)+b*d*e*cos(g^h)+b*f*cos(g^h)", expanded.ToString());
+            //              {a*c*cos(g^h)+a*f*cos(g^h)+a*d*e*cos(g^h)+b*c*cos(g^h)+b*f*cos(g^h)+b*d*e*cos(g^h)}
         }
     }
 }

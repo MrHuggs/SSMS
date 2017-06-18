@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SSMS
 {
@@ -15,8 +15,21 @@ namespace SSMS
 
         public ProdNode(params SymNode[] node_list) : this()
         {
+            Debug.Assert(node_list.Count() > 1);  // Product node must have at least 2 nodes.
             foreach (var node in node_list)
                 AddChild(node);
+        }
+
+        // Helper: Given a list of nodes, clone the nodes and crate a product node for their
+        // product, unless there is just one node, in which case just return the one.
+        public static SymNode FromProdList<T> (List<T> list) where T : SymNode
+        {
+            Debug.Assert(list.Count > 0);
+            if (list.Count == 1)
+                return list[0].DeepClone();
+            ProdNode result = new ProdNode();
+            list.ForEach(node => result.AddChild(node.DeepClone()));
+            return result;
         }
 
         public override void Format(FormatBuilder fb)
@@ -75,7 +88,7 @@ namespace SSMS
             return true;
         }
 
-             public override SymNode FoldConstants()
+        public override SymNode FoldConstants()
         {
             var new_node = new ProdNode();
 
@@ -121,6 +134,114 @@ namespace SSMS
             }
 
             return new_node.FoldConstants();
+        }
+
+        class MergePair
+        {
+            public MergePair(SymNode node)
+            {
+                if (node.Type == NodeTypes.Power)
+                {
+                    Base = ((PowerNode)node).Base;
+                    ExponentNodes.Add( ((PowerNode)node).Exponent);
+                }
+                else
+                {
+                    Base = node;
+                    IntPower = 1;
+                }
+            }
+            public SymNode Base;
+            public int IntPower = 0;
+            public List<SymNode> ExponentNodes = new List<SymNode>();
+
+            public bool AttemptMerge(SymNode other)
+            {
+                if (other.Type == NodeTypes.Power)
+                {
+                    PowerNode op = (PowerNode)other;
+
+                    if (op.Base.IsEqual(Base))
+                    {
+                        ExponentNodes.Add(op.Exponent);
+                        return true;
+                    }
+                }
+                else if (other.IsEqual(Base))
+                {
+                    IntPower++;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public SymNode CreateNode()
+            {
+                if (ExponentNodes.Count == 0)
+                {
+                    Debug.Assert(IntPower > 0);
+                    return (IntPower == 1) ?  
+                                    Base.DeepClone() : 
+                                    new PowerNode(Base.DeepClone(), new ConstNode((double)IntPower));
+                }
+
+                if (IntPower > 0)
+                    ExponentNodes.Add(new ConstNode((double)IntPower));
+
+                return new PowerNode(Base.DeepClone(), PlusNode.FromPlusList(ExponentNodes));
+            }
+        };
+        
+        public SymNode MergeChildrenTogether()
+        {
+            // Merge children together that have a the same base: e.g. a^2*a^(x+2) -> a^{x+4})
+            var pairs = new List<MergePair>();
+            bool merged = false;        // Did any merging occur.
+
+            foreach (var v in Children)
+            {
+                
+                for (int i = 0; ; i++)
+                {
+                    if (i == pairs.Count)
+                    {
+                        pairs.Add(new MergePair(v));
+                        break;
+                    }
+
+                    if (pairs[i].AttemptMerge(v))
+                    {
+                        merged = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!merged)
+                return null;
+
+            if (pairs.Count == 1)
+                return pairs[0].CreateNode();
+
+            PlusNode result = new PlusNode();
+            pairs.ForEach(pair => result.AddChild(pair.CreateNode()));
+
+            return result;
+        }
+
+
+        public override SymNode Merge()
+        {
+            ProdNode r1 = (ProdNode)MergeChildrenUp();
+
+            if (r1 != null)
+            {
+                var merge_childen = r1.MergeChildrenTogether();
+                return (merge_childen != null) ? merge_childen : r1;
+            }
+
+            return MergeChildrenTogether();
         }
 
     }

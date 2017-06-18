@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SSMS
 {
@@ -44,17 +44,27 @@ namespace SSMS
                 }
             }
 
-            PlusNode new_parent = new PlusNode();
             PlusNode existing_plus = (PlusNode) prod_node.GetChild(index);
-            prod_node.RemoveChild(index);
+            Debug.Assert(existing_plus.ChildCount() > 1);
 
+
+            PlusNode new_parent = new PlusNode();
             for (int i = 0; i < existing_plus.ChildCount(); i++)
             {
-                var prod = new ProdNode(existing_plus.GetChild(i).DeepClone(),
-                                prod_node.DeepClone()
-                                );
-                new_parent.AddChild(prod);
+                var new_prod = new ProdNode();
+                new_prod.AddChild(existing_plus.GetChild(i).DeepClone());
+
+                for (int j = 0; j < prod_node.ChildCount(); j++)
+                {
+                    if (j == index)
+                        continue;       // Ignore the existing child.
+
+                    var child = prod_node.GetChild(j);
+                    new_prod.AddChild(child.DeepClone());
+                }
+                new_parent.AddChild(new_prod);
             }
+      
             return new_parent;
         }
     }
