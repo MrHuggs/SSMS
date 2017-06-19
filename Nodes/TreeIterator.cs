@@ -31,34 +31,30 @@ namespace SSMS
         List<StackEntry> Stack = new List<StackEntry>();
 
         public SymNode Cur { get; private set; }
-        public SymNode Parent { get; private set; }
+        public SymNode Parent()
+        {
+            if (Stack.Count < 1)
+                return null;
+            return Stack[Stack.Count - 1].Node;
+        }
 
         public bool Next()
         {
             if (Stack.Count == 0)
             {
                 Cur = null;
-                Parent = null;
                 return false;
             }
 
             while (true)
             {
 
-                SymNode result;
                 StackEntry top = Stack.Last();
 
                 if (top.ChildIndex == top.Node.ChildCount())
                 {
-                    result = top.Node;
                     Stack.Remove(top);
-                    Cur = result;
-
-                    int cnt = Stack.Count;
-                    if (cnt == 0)
-                        Parent = null;
-                    else
-                        Parent = Stack[cnt - 1].Node;
+                    Cur = top.Node;
 
                     return true;
                 }
@@ -67,6 +63,73 @@ namespace SSMS
                     var new_top = new StackEntry();
                     new_top.Node = top.Node.GetChild(top.ChildIndex);
                     new_top.ChildIndex = 0;
+                    Stack.Add(new_top);
+
+                    top.ChildIndex++;
+                }
+            }
+        }
+    }
+
+    public class TreeIteratorPre
+    {
+        // Iterate the the nodes of SymNode tree in Depth First, pre-ord
+        // https://en.wikipedia.org/wiki/Tree_traversal#Post-order
+        //
+
+        public TreeIteratorPre(SymNode root)
+        {
+            StackEntry entry = new StackEntry();
+            entry.Node = root;
+            entry.ChildIndex = -1;
+            Stack.Add(entry);
+        }
+
+        class StackEntry
+        {
+            public SymNode Node;
+            public int ChildIndex;
+        };
+
+        List<StackEntry> Stack = new List<StackEntry>();
+
+        public SymNode Cur { get; private set; }
+        public SymNode Parent()
+        {
+            if (Stack.Count < 2)
+                return null;
+            return Stack[Stack.Count - 2].Node;
+        }
+
+        public bool Next()
+        {
+            while (true)
+            {
+                if (Stack.Count == 0)
+                {
+                    Cur = null;
+                    return false;
+                }
+
+                StackEntry top = Stack.Last();
+
+                if (top.ChildIndex == -1)
+                {
+                    Cur = top.Node;
+                    top.ChildIndex++;
+                    return true;
+                }
+
+                if (top.ChildIndex == top.Node.ChildCount())
+                {
+                    Stack.Remove(top);
+                }
+                else
+                {
+                    var new_top = new StackEntry();
+
+                    new_top.Node = top.Node.GetChild(top.ChildIndex);
+                    new_top.ChildIndex = -1;
                     Stack.Add(new_top);
 
                     top.ChildIndex++;

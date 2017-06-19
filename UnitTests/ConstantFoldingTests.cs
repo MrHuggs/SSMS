@@ -101,7 +101,6 @@ namespace UnitTests
         public void ProdMergeTest()
         {
             ProdNode prod;
-            PlusNode plus;
             SymNode folded, merged;
             var a = new VarNode("a");
             var at1 = new PowerNode(a.DeepClone(), new ConstNode(1));

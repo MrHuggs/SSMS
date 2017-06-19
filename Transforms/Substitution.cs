@@ -28,7 +28,7 @@ namespace SSMS
 
                 if (node.IsEqual(target))
                 {
-                    it.Parent.ReplaceChild(node, replacement.DeepClone());
+                    it.Parent().ReplaceChild(node, replacement.DeepClone());
                 }
 
             }

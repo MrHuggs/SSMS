@@ -104,7 +104,13 @@ namespace SSMS
         // Replace one node with another. If the replacement is null, the original is simply
         // removed. If you replace a node with another, it may get sorted to a different spot:
         public virtual void ReplaceChild(SymNode existing_child, SymNode new_child) { Debug.Assert(false); }
-
+        public bool HasChild(SymNode node)
+        {
+            for (int i = 0; i < ChildCount(); i++)
+                if (GetChild(i) == node)
+                    return true;
+            return false;
+        }
         // Perform a deep equality check BY VALUE: Returns true if this and its children have the same values
         // as other and its children.
         public abstract bool IsEqual(SymNode other);

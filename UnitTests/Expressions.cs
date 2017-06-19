@@ -9,7 +9,9 @@ namespace UnitTests
     
     class Exp1
     {
-        public Dictionary<SymNode, int> Orders = new Dictionary<SymNode, int>();
+        public Dictionary<SymNode, int> PostOrders = new Dictionary<SymNode, int>();
+        public Dictionary<SymNode, int> PreOrders = new Dictionary<SymNode, int>();
+        public Dictionary<SymNode, SymNode> Parents = new Dictionary<SymNode, SymNode>();
         public SymNode Root;
 
         public VarNode a, b, c, d, e, f, g, h;
@@ -28,46 +30,61 @@ namespace UnitTests
             // we can check as we iterate.
             //
             a = new VarNode("a");
-            Orders[a] = 0;
+            PostOrders[a] = 0;
+            PreOrders[a] = 2;
 
             b = new VarNode("b");
-            Orders[b] = 1;
+            PostOrders[b] = 1;
+            PreOrders[b] = 3;
 
             plus2 = new PlusNode(a, b);
-            Orders[plus2] = 2;
+            PostOrders[plus2] = 2;
+            PreOrders[plus2] = 1;
 
             c = new VarNode("c");
-            Orders[c] = 3;
+            PostOrders[c] = 3;
+            PreOrders[c] = 5;
+
 
             d = new VarNode("d");
-            Orders[d] = 4;
+            PostOrders[d] = 4;
+            PreOrders[d] = 7;
 
             e = new VarNode("e");
-            Orders[e] = 5;
+            PostOrders[e] = 5;
+            PreOrders[e] = 8;
 
             prod6 = new ProdNode(d, e);
-            Orders[prod6] = 6;
+            PostOrders[prod6] = 6;
+            PreOrders[prod6] = 6;
 
             f = new VarNode("f");
-            Orders[f] = 7;
+            PostOrders[f] = 7;
+            PreOrders[f] = 9;
 
             plus8 = new PlusNode(c, prod6, f);
-            Orders[plus8] = 8;
+            PostOrders[plus8] = 8;
+            PreOrders[plus8] = 4;
 
             g = new VarNode("g");
-            Orders[g] = 9;
+            PostOrders[g] = 9;
+            PreOrders[g] = 12;
 
             h = new VarNode("h");
-            Orders[h] = 10;
+            PostOrders[h] = 10;
+            PreOrders[h] = 13;
 
             exp11 = new PowerNode(g, h);
-            Orders[exp11] = 11;
+            PostOrders[exp11] = 11;
+            PreOrders[exp11] = 11;
 
             cos10 = new CosNode(exp11);
-            Orders[cos10] = 12;
+            PostOrders[cos10] = 12;
+            PreOrders[cos10] = 10;
 
             prod11 = new ProdNode(plus2, plus8, cos10);
-            Orders[prod11] = 13;
+            PostOrders[prod11] = 13;
+            PreOrders[prod11] = 0;
 
             Root = prod11;
         }
