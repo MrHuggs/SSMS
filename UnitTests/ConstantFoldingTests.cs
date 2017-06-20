@@ -51,7 +51,7 @@ namespace UnitTests
             prod.AddChild(b);
             plus.AddChild(a);
             folded = plus.FoldConstants();
-            Assert.AreEqual("1+a-520*b", folded.ToString());
+            Assert.AreEqual("1+a-520*b", folded.ToStringSorted());
 
             var enode = new PowerNode(c10, c1);
             folded = enode.FoldConstants();
@@ -85,7 +85,7 @@ namespace UnitTests
 
             prod = new ProdNode(a, new ConstNode(-1));
             plus = new PlusNode(prod, a);
-            Assert.AreEqual("-a+a", plus.ToString());
+            Assert.AreEqual("a-a", plus.ToStringSorted());
             merged = plus.Merge();
             Assert.AreEqual("0", merged.ToString());
 
@@ -104,17 +104,57 @@ namespace UnitTests
             SymNode folded, merged;
             var a = new VarNode("a");
             var at1 = new PowerNode(a.DeepClone(), new ConstNode(1));
- 
+            var atm1 = new PowerNode(a.DeepClone(), new ConstNode(-1));
+
             prod = new ProdNode(a, a.DeepClone());
-            merged = prod.Merge();
-            Assert.AreEqual("a^2", merged.ToString());
+            var a2 = prod.Merge();
+            Assert.AreEqual("a^2", a2.ToString());
 
             prod = new ProdNode(a, at1);
             merged = prod.Merge();
             Assert.AreEqual("a^(1+1)", merged.ToString());
             folded = merged.FoldConstants();
             Assert.AreEqual("a^2", folded.ToString());
+
+            prod = new ProdNode(atm1.DeepClone(), a, atm1.DeepClone(), a2, atm1);
+            merged = prod.Merge();
+            Assert.AreEqual("a^(-1-1-1+1+2)", merged.ToStringSorted());
+            folded = merged.FoldConstants();
+            Assert.AreEqual("1", folded.ToString());
         }
+
+        [TestCase]
+        public void ExpandedProdMergeTest()
+        {
+            TransformsList tlist = new TransformsList();
+            var a = new VarNode("a");
+            var b = new VarNode("b");
+            var c = new VarNode("c");
+            var g = new VarNode("g");
+            var h = new VarNode("h");
+
+            var pn = new ProdNode(a, new ProdNode(b, c));
+            Assert.AreEqual("a*(b*c)", pn.ToString());
+
+            Assert.AreEqual(null, tlist.Expand(pn));
+            var merged = tlist.Simplify(pn);
+            Assert.AreEqual("a*b*c", merged.ToStringSorted());
+
+            pn.AddChild(new CosNode(new PowerNode(g, h)));
+            Assert.AreEqual("a*(b*c)*cos(g^h)", pn.ToStringSorted());
+
+            Assert.AreEqual(null, tlist.Expand(pn));
+            merged = tlist.Simplify(pn);
+            Assert.AreEqual("a*b*c*cos(g^h)", merged.ToStringSorted());
+
+            PlusNode plus = new PlusNode(a, pn);
+            Assert.AreEqual("a+a*(b*c)*cos(g^h)", plus.ToStringSorted());
+
+            Assert.AreEqual(null, tlist.Expand(plus));
+            merged = tlist.Simplify(plus);
+            Assert.AreEqual("a+a*b*c*cos(g^h)", merged.ToStringSorted());
+        }
+
 
         [TestCase]
         public void TrigTest()
@@ -174,17 +214,17 @@ namespace UnitTests
 
             en = new CosNode(prod).FoldConstants();
             Assert.AreEqual(NodeTypes.Cos, en.Type);
-            Assert.AreEqual("cos(1.5707963267949*a)", en.ToString());
+            Assert.AreEqual("cos(1.5707963267949*a)", en.ToStringSorted());
             en = new CosNode(prod).Evaluate();
             Assert.AreEqual(NodeTypes.Cos, en.Type);
-            Assert.AreEqual("cos(1.5707963267949*a)", en.ToString());
+            Assert.AreEqual("cos(1.5707963267949*a)", en.ToStringSorted());
 
             en = new SinNode(prod).FoldConstants();
             Assert.AreEqual(NodeTypes.Sin, en.Type);
-            Assert.AreEqual("sin(1.5707963267949*a)", en.ToString());
+            Assert.AreEqual("sin(1.5707963267949*a)", en.ToStringSorted());
             en = new SinNode(prod).Evaluate();
             Assert.AreEqual(NodeTypes.Sin, en.Type);
-            Assert.AreEqual("sin(1.5707963267949*a)", en.ToString());
+            Assert.AreEqual("sin(1.5707963267949*a)", en.ToStringSorted());
 
 
         }

@@ -65,11 +65,6 @@ namespace SSMS
             return Base.IsEqual(pnode.Base) && Exponent.IsEqual(pnode.Exponent);
         }
 
-        public override NodeSortVal GetSortVal()
-        {
-            return Base.GetSortVal();
-        }
-
         public override SymNode DeepClone()
         {
             return new PowerNode(Base.DeepClone(), Exponent.DeepClone());

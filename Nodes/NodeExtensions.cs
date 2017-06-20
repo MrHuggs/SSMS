@@ -20,5 +20,26 @@ namespace SSMS
             }
             return true;
         }
+
+        public static List<SymNode> ShallowCopy(this List<SymNode> value)
+        {
+            var result = new List<SymNode>();
+            value.ForEach(node => result.Add(node));
+            return result;
+        }
+
+
+        public static bool IsFunction(this NodeTypes type)
+        {
+            switch(type)
+            {
+                case NodeTypes.Cos:
+                case NodeTypes.Sin:
+                case NodeTypes.Tan:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 }

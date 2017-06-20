@@ -14,7 +14,7 @@ namespace SSMS
             Var = var;
         }
 
-        String Var;
+        public String Var;
 
         public override void Format(FormatBuilder fb)
         {
@@ -27,11 +27,6 @@ namespace SSMS
                 return false;
 
             return ((VarNode)other).Var == Var;
-        }
-
-        public override NodeSortVal GetSortVal()
-        {
-            return new NodeSortVal(Type, Var);
         }
 
         public override SymNode DeepClone()

@@ -11,42 +11,15 @@ namespace SSMS
     {
         // This is a base class for a node that has a bunch children that are related
         // through a commutative operation (e.g. multiplication, addition).
-        // As the operation is commutative, we can reorder the elements.
+        // As the operation is commutative, we can reorder the elements if we wish.
 
-        public override void AddChild(SymNode child)
+
+        public override void Sort()
         {
-            Debug.Assert(!Children.Contains(child));
-
-            int i = 0;
-
-            var sort_val = child.GetSortVal();
-
-            for (i = 0; i < Children.Count; i++)
-            {
-                var child_val = Children[i].GetSortVal();
-                if (NodeSortVal.Compare(sort_val, child_val) < 0)
-                    break;
-            }
-            Children.Insert(i, child);
+            Children.ForEach(node => node.Sort());
+            Children.Sort((a, b) => SymNode.CompareNodes(a, b));
         }
-        
-        override public NodeSortVal GetSortVal()
-        {
-            if (Children.Count == 0)
-                return new NodeSortVal(Type);
 
-
-            // We should be sorted based on our first non-constant node.
-            // So, for example, 4 * 3 * x * y is sorted based on x.
-            for (int i = 0; i < Children.Count; i++)
-            {
-                if (Children[i].Type != NodeTypes.Constant)
-                    return Children[i].GetSortVal();
-            }
-
-            return Children[0].GetSortVal();
-
-        }
 
         public CommutativeNode MergeChildrenUp()
         {
@@ -81,38 +54,30 @@ namespace SSMS
 
         // Helper method: Get the value of the first constant node, and a list with the other
         // children.
-        // *    Since the constants node should alwasy sort to the front, this is really just the
-        //      first node if it is a Constant.
+        //  *   Since the list may not have a set order, we just find the first constant.
+        //
         // *    If constants have not been folded, it is possible thath the may be more than one
         //      constant node, in which case Otherse may also start with constatns.
-
+        //
         public ChildSplit SplitConstChild()
         {
             var result = new ChildSplit();
 
-            if (Children.Count == 0)
-                return result;
-
-            int index;
-
-            if (Children[0].Type == NodeTypes.Constant)
+            foreach (var node in Children)
             {
-                result.Constant = (ConstNode) Children[0];
+                if (node.Type == NodeTypes.Constant)
+                {
+                    if (result.Constant == null)
+                    {
+                        result.Constant = (ConstNode) node;
+                        continue;
+                    }
+                }
+                if (result.Others == null)
+                    result.Others = new List<SymNode>();
 
-                if (Children.Count == 1)
-                    return result;
-
-                index = 1;
+                result.Others.Add(node);
             }
-            else
-                index = 0;
-
-
-            result.Others = new List<SymNode>();
-
-            for (; index < Children.Count; index++)
-                result.Others.Add(Children[index]);
-
             return result;
         }
 

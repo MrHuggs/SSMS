@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SSMS
 {
     public abstract class ChildListNode : SymNode
     {
         // A node that has multiple children kept in a list
-        // Depending on the subclass, the list may or may not be able to be 
-        // reordered. This comes up when a child is added.
+        // Depending on the subclass, the order of the list may or may not
+        // matter.
         //
 
         public List<SymNode> Children = new List<SymNode>();
@@ -26,8 +26,12 @@ namespace SSMS
                 AddChild(new_child);
         }
 
-        // Adds a child and sorts it into the correct spot:
-        abstract public void AddChild(SymNode child);
+        public void AddChild(SymNode child)
+        {
+            Debug.Assert(!Children.Contains(child));
+
+            Children.Add(child);
+        }
 
         public void RemoveChild(int index) { Children.RemoveAt(index); }
         public void RemoveChild(SymNode node) { Children.Remove(node); }
@@ -44,11 +48,22 @@ namespace SSMS
             if (ocount != Children.Count)
                 return false;
 
-            // Since order matters in the list, we can compare correspoding elements:
+            // The other list might be in a different order.
+            bool[] used = new bool[ocount];
+
             for (int i = 0; i < ocount; i++)
             {
-                if (!Children[i].IsEqual(pnode.Children[i]))
-                    return false;
+                SymNode child = Children[i];
+                for (int j = 0; ; j++)
+                {
+                    if (j == ocount)
+                        return false;   // failed to find a match.
+                    if (used[j])
+                        continue;
+
+                    if (child.IsEqual(pnode.Children[i]))
+                        break;
+                }
             }
             return true;
         }

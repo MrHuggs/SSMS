@@ -29,11 +29,6 @@ namespace SSMS
             return ((ConstNode)other).Value == Value;
         }
 
-        public override NodeSortVal GetSortVal()
-        {
-            return new NodeSortVal(Type, Value);
-        }
-
         public override SymNode DeepClone()
         {
             return new ConstNode(Value);

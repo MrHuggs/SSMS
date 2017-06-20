@@ -34,12 +34,29 @@ namespace SSMS
 
         public override void Format(FormatBuilder fb)
         {
-            for (int i = 0; i < Children.Count; i++)
+            // The sort process puts constants behind variables. However, we normally write the constant term
+            // in front of variables. Handle this by writing our our children in two passes. First write
+            // out constants, then other children.
+            //
+            // This we get 10*a instead of a*10
+            //
+            int cnt = 0;
+            foreach(var node in Children)
             {
-                if (i > 0)
+                if (node.Type != NodeTypes.Constant)
+                    continue;
+                if (cnt++ > 0)
                     fb.Append('*');
+                fb.Append(node.ToString());
+            }
 
-                var node = Children[i];
+            foreach (var node in Children)
+            {
+                if (node.Type == NodeTypes.Constant)
+                    continue;
+
+                if (cnt++ > 0)
+                    fb.Append('*');
 
                 // Decide if the child needs to be parenthesized. We'll just use the
                 // operator precendece. This does mean you could see results like
@@ -50,9 +67,8 @@ namespace SSMS
                     need_paren = true;  // Child has lower precedence.
                 }
                 else need_paren = false;
-
                 fb.Append(node.ToString(), need_paren);
-            }
+            }       
         }
 
 

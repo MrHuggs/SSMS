@@ -34,15 +34,30 @@ namespace SSMS
 
         public override void Format(FormatBuilder fb)
         {
-            FormatBuilder child_builder = new FormatBuilder();
+            // The sort process puts constants behind variables. However, we normally write the constant term
+            // in front of variables. Handle this by writing our our children in two passes. First write
+            // out constants, then other children.
+            //
+            // This we get 10+a instead of a+10
+            //
+            int cnt = 0;
             foreach (var node in Children)
             {
-                fb.Append('+');
-                node.Format(child_builder);
-                string child_string = child_builder.ToString();
+                if (node.Type != NodeTypes.Constant)
+                    continue;
+                if (cnt++ > 0)
+                    fb.Append('+');
+                fb.Append(node.ToString());
+            }
 
-                fb.Append(child_string);
-                child_builder.Clear();
+            foreach (var node in Children)
+            {
+                if (node.Type == NodeTypes.Constant)
+                    continue;
+
+                if (cnt++ > 0)
+                    fb.Append('+');
+                fb.Append(node.ToString());
             }
         }
 

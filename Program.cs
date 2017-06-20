@@ -128,8 +128,6 @@ namespace SSMS
             p.Print();
             Debug.Assert(Cos2Sin2Transform.Transform(p));
             p.Print();
-
-
         }
 
         static public void ProdNodeTest()

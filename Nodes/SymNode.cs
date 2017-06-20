@@ -6,17 +6,18 @@ using System.Diagnostics;
 
 namespace SSMS
 {
-    // List of all possible node types. Node there there are some intermediate helper subclasses
+    // List of all possible node types. Note that there are some intermediate helper subclasses
     // of SymNode that are not included.
     //
-    // They are ordere by operation precedence.
+    // They are ordered by operator precedence.
+    // The order is also used for displaying terms, with some small modificaitons.
     //
     // The convenetion will be to examine nodes by getthing their Type, instead of using
-    // the C# type systme. I.e: if (node.Type == NodeTypes.Var)
+    // the C# type systme. I.e: if (node.Type == NodeTypes.Var) instead of node as Type
     public enum NodeTypes
     {
-        Constant,
         Var,
+        Constant,
         Power,
         Cos,
         Sin,
@@ -25,64 +26,7 @@ namespace SSMS
         Prod,
         Plus,
     };
-
-    public struct NodeSortVal
-    {
-        public NodeSortVal(NodeTypes type)
-        {
-            Type = type;
-            Identifier = null;
-            Value = 0;
-        }
-        public NodeSortVal(NodeTypes type, double value)
-        {
-            Type = type;
-            Identifier = null;
-            Value = value;
-        }
-        public NodeSortVal(NodeTypes type, string identifier)
-        {
-            Type = type;
-            Identifier = identifier;
-            Value = 0;
-        }
-
-
-        NodeTypes Type;
-        String Identifier;
-        double Value;
-
-        // Compare to sort values. This uses the C# convention:
-        // If a should come before b, return < 0.
-        public static int Compare(NodeSortVal a, NodeSortVal b)
-        {
-            if (a.Type != b.Type)
-            {
-                return a.Type - b.Type;
-            }
-
-            if (a.Type == NodeTypes.Var)
-            {
-                if (a.Identifier == null)
-                {
-                    if (b.Identifier == null) return 0;
-                    return -1;
-
-                }
-                if (b.Identifier == null)
-                    return 1;
-
-                return a.Identifier.CompareTo(b.Identifier);
-            }
-            Debug.Assert(a.Type == NodeTypes.Constant);
-
-            double del = a.Value - b.Value;
-            if (del < 0) return -1;
-            if (del > 0) return 1;
-            return 0;
-        }
-    }
-
+    
     public abstract class SymNode
     {
 
@@ -96,8 +40,9 @@ namespace SSMS
         }
 
         // Nodes can have children, and these method provide a way to traverse them.
-        // Note that the order of the children depends on the type of node and lexical
-        // sorting of a the nodes. 
+        // The order of the children should not matter. Although a lexical order is used
+        // for printing, the children could appear in any order.
+        //
         // The nodes should form a tree, so a child should never be added twice.
         public virtual int ChildCount() { return 0; }
         public virtual SymNode GetChild(int index) { Debug.Assert(false); return null; }
@@ -115,21 +60,29 @@ namespace SSMS
         // as other and its children.
         public abstract bool IsEqual(SymNode other);
 
-
-        // Compare another node for sorting. Return > 0 if this node should
-        // come before the other.
-        public virtual NodeSortVal GetSortVal()
+        // Reorder and node that can be reorded without affecting the mean of the expression.
+        // The function should recursively call is children sort itself after:
+        public virtual void Sort()
         {
-            return new NodeSortVal(Type);
-        }
+            for (int i = 0; i < ChildCount(); i++)
+                GetChild(i).Sort();
+        }  
 
         public abstract SymNode DeepClone();
 
+
+        // Convert to a string without sorting:
         public override string ToString()
         {
             var sb = new FormatBuilder();
             Format(sb);
             return sb.ToString();
+        }
+
+        public string ToStringSorted()
+        {
+            Sort();
+            return ToString();
         }
 
         public void Print()
@@ -164,6 +117,55 @@ namespace SSMS
         // if any merging was done. Note that the type of node may change.
         // This is best done after constants have been folded.
         public virtual SymNode Merge() { return null; }
+
+
+        // Comparison function used where we are ordering nodes with Sort():
+        static public int CompareNodes(SymNode a, SymNode b)
+        {
+            var ca = new CompIterator(a);
+            var cb = new CompIterator(b);
+
+            while (true)
+            {
+                bool an = ca.Next();
+                bool bn = cb.Next();
+
+                if (an == false)
+                {
+                    if (bn == false)
+                        return 0;
+                    return -1;
+                }
+                if (bn == false)
+                    return 1;
+
+                int del = ca.Cur.Type - cb.Cur.Type;
+                if (del != 0)
+                    return del;
+
+                switch(ca.Cur.Type)
+                {
+                    case NodeTypes.Constant:
+                        double ddel = ((ConstNode)ca.Cur).Value - ((ConstNode)cb.Cur).Value;
+                        if (ddel < 0)
+                            return -1;
+                        if (ddel > 0)
+                            return 1;
+                        break; //  ddel == 0
+                    case NodeTypes.Var:
+                        int sdel = ((VarNode)ca.Cur).Var.CompareTo(((VarNode)cb.Cur).Var);
+                        if (sdel != 0)
+                            return sdel;
+                        // else strings are equal.
+                        break;
+                    default:
+                        Debug.Assert(false);
+                        break;
+                }
+                // Continue searching.
+            }
+
+        }
     }
 
 

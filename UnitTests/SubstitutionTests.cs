@@ -36,9 +36,9 @@ namespace UnitTests
             result = Substitution.Substitute(result, new VarNode("d"), c10);
             result = Substitution.Substitute(result, new VarNode("e"), c10);
 
-            Assert.AreEqual("(a+b)*(10+10*10+f)*cos(g^h)", result.ToString());
+            Assert.AreEqual("(a+b)*(10+f+10*10)*cos(g^h)", result.ToStringSorted());
             result = result.FoldConstants();
-            Assert.AreEqual("(a+b)*(110+f)*cos(g^h)", result.ToString());
+            Assert.AreEqual("(a+b)*(110+f)*cos(g^h)", result.ToStringSorted());
 
         }
 

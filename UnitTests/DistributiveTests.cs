@@ -24,7 +24,7 @@ namespace UnitTests
 
             var result = dist_trans.Apply(prod);
 
-            Assert.AreEqual("a*b+a*c", result.ToString());
+            Assert.AreEqual("a*b+a*c", result.ToStringSorted());
 
         }
 
@@ -40,12 +40,7 @@ namespace UnitTests
 
             var expanded  = tlist.Expand(exp.Root);
             var merged = tlist.Simplify(expanded);
-            //
-            // ***************************************************************
-            // Need to add merging of prod nodes and sum nodes
-            //
-            Assert.AreEqual("a*c*cos(g^h)+a*d*e*cos(g^h)+a*f*cos(g^h)+b*c*cos(g^h)+b*d*e*cos(g^h)+b*f*cos(g^h)", expanded.ToString());
-            //              {a*c*cos(g^h)+a*f*cos(g^h)+a*d*e*cos(g^h)+b*c*cos(g^h)+b*f*cos(g^h)+b*d*e*cos(g^h)}
+            Assert.AreEqual("a*c*cos(g^h)+a*d*e*cos(g^h)+a*f*cos(g^h)+b*c*cos(g^h)+b*d*e*cos(g^h)+b*f*cos(g^h)", merged.ToStringSorted());
         }
     }
 }
