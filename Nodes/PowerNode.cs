@@ -176,6 +176,26 @@ namespace SSMS
 
             return new_node;
         }
-        
+
+        public override SymNode Differentiate(string var)
+        {
+            if (Exponent.Type == NodeTypes.Constant)
+            {
+                double cur_exp = ((ConstNode)Exponent).Value;
+
+                PowerNode new_power = new PowerNode(Base.DeepClone(), new ConstNode(cur_exp-1));
+
+                ProdNode result = new ProdNode(new ConstNode(cur_exp), new_power);
+
+                return result;
+
+            }
+            // An expeonent that is not constant is not currently supported. We'll need a log node type, whic hwe don't
+            // currently have.
+
+            Debug.Assert(false);
+            return null;
+        }
+
     }
 }

@@ -126,7 +126,7 @@ namespace UnitTests
         [TestCase]
         public void ExpandedProdMergeTest()
         {
-            TransformsList tlist = new TransformsList();
+            TransformsList tlist = TransformsList.Inst();
             var a = new VarNode("a");
             var b = new VarNode("b");
             var c = new VarNode("c");

@@ -44,5 +44,12 @@ namespace SSMS
             return new VarNode(Var);
         }
 
+        public override SymNode Differentiate(string var)
+        {
+            if (var == Var)
+                return new ConstNode(1);
+
+            return new ConstNode(0);
+        }
     }
 }

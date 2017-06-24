@@ -9,7 +9,7 @@ namespace SSMS
   
     class ConstFoldTransform : NodeTransform
     {
-        TransformAttributes[] _Attributes = { TransformAttributes.Simplify };
+        TransformAttributes[] _Attributes = { TransformAttributes.Simplify, TransformAttributes.Recursive };
         public override TransformAttributes[] Attributes { get { return _Attributes; } }
 
         public override SymNode Apply(SymNode start_node)

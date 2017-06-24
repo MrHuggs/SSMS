@@ -51,6 +51,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DifferentiationTests.cs" />
     <Compile Include="DistributiveTests.cs" />
     <Compile Include="Expressions.cs" />
     <Compile Include="IteratorTests.cs" />

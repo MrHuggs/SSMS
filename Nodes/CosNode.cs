@@ -27,6 +27,12 @@ namespace SSMS
             return Angle.IsZero();
         }
 
+        public override SymNode DeepClone()
+        {
+            var n = new CosNode(Angle.DeepClone());
+            return n;
+        }
+
         public override SymNode FoldConstants()
         {
             var new_angle = Angle.FoldConstants();
@@ -46,6 +52,17 @@ namespace SSMS
                 return new ConstNode(c);
             }
             return new CosNode(new_angle);
+        }
+
+        public override SymNode Differentiate(string var)
+        {
+            SymNode adif = Angle.Differentiate(var);
+
+            return new ProdNode(
+                        new ConstNode(-1),
+                        adif,
+                        new SinNode(Angle.DeepClone())
+                        );
         }
     }
 }

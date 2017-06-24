@@ -9,7 +9,7 @@ namespace UnitTests
     public class DistributiveTests
     {
         DistributiveTransform dist_trans = new DistributiveTransform();
-        TransformsList tlist = new TransformsList();
+        TransformsList tlist = TransformsList.Inst();
 
         [TestCase]
         public void SimpleDistributive()

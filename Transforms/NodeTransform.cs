@@ -10,6 +10,7 @@ namespace SSMS
     {
         Simplify,
         Expand,
+        Recursive,  // This tranform can just be applied at the top node.
     }
 
     public abstract class NodeTransform
@@ -75,7 +76,15 @@ namespace SSMS
                 transformed = false;
                 foreach (var t in transforms)
                 {
-                    var updated = ApplyTransform(t, new_version);
+                    SymNode updated;
+                    if (t.Attributes.Contains(TransformAttributes.Recursive))
+                    {
+                        updated = t.Apply(new_version);
+                    }
+                    else
+                    {
+                        updated = ApplyTransformDFO(t, new_version);
+                    }
 
                     if (updated != null)
                     {
@@ -98,7 +107,7 @@ namespace SSMS
         // modified. 
         // Return a new base node if any transform took place, or null if there
         // was no change.  
-        SymNode ApplyTransform(NodeTransform t, SymNode start_node)
+        SymNode ApplyTransformDFO(NodeTransform t, SymNode start_node)
         {
             var temp_parent = new PlusNode();
             temp_parent.AddChild(start_node);

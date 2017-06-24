@@ -251,6 +251,19 @@ namespace SSMS
             return MergeChildrenTogether();
         }
 
+        public override SymNode Differentiate(string var)
+        {
+            PlusNode new_plus = new PlusNode();
+
+            foreach(var v in Children)
+            {
+                var dv = v.Differentiate(var);
+                new_plus.AddChild(dv);
+            }
+
+            return new_plus;
+        }
+
     }
 
 }

@@ -18,6 +18,7 @@ namespace SSMS
     {
         Var,
         Constant,
+        Differential,
         Power,
         Cos,
         Sin,
@@ -118,6 +119,7 @@ namespace SSMS
         // This is best done after constants have been folded.
         public virtual SymNode Merge() { return null; }
 
+        public abstract SymNode Differentiate(string var);
 
         // Comparison function used where we are ordering nodes with Sort():
         static public int CompareNodes(SymNode a, SymNode b)

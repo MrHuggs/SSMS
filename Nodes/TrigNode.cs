@@ -32,15 +32,9 @@ namespace SSMS
             if (other.Type != Type)
                 return false;
 
-            return Angle.IsEqual(((CosNode)other).Angle);
+            return Angle.IsEqual(((TrigNode)other).Angle);
         }
 
-        public override SymNode DeepClone()
-        {
-            var n = new CosNode(Angle.DeepClone());
-
-            return n;
-        }
 
     }
 }

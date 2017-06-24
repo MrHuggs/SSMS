@@ -249,7 +249,7 @@ namespace SSMS
 
         public override SymNode Merge()
         {
-            ProdNode r1 = (ProdNode)MergeChildrenUp();
+            ProdNode r1 = (ProdNode) MergeChildrenUp();
 
             if (r1 != null)
             {
@@ -258,6 +258,28 @@ namespace SSMS
             }
 
             return MergeChildrenTogether();
+        }
+
+        public override SymNode Differentiate(string var)
+        {
+            PlusNode result = new PlusNode();
+
+            for (int i = 0; i < Children.Count; i++)
+            {
+                SymNode dif = Children[i].Differentiate(var);
+                ProdNode prod = new ProdNode();
+
+                prod.AddChild(dif);
+                for (int j = 0; j < Children.Count; j++)
+                {
+                    if (j == i)
+                        continue;
+                    prod.AddChild(Children[j].DeepClone());
+                }
+
+                result.AddChild(prod);
+            }
+            return result;
         }
 
     }

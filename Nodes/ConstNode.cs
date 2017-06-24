@@ -47,5 +47,10 @@ namespace SSMS
             return new ConstNode(Value);
         }
 
+        public override SymNode Differentiate(string var)
+        {
+            return new ConstNode(0);
+        }
+
     }
 }

@@ -49,6 +49,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Nodes\ChildListNode.cs" />
     <Compile Include="Nodes\CommutativeNode.cs" />
+    <Compile Include="Nodes\DNode.cs" />
     <Compile Include="Nodes\NodeExtensions.cs" />
     <Compile Include="Nodes\TreeIterator.cs" />
     <Compile Include="Transforms\ConstFoldTransform.cs" />
