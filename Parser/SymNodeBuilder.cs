@@ -10,18 +10,45 @@ namespace SSMS.Parser
     public class SymNodeBuilder
     {
 
+        static HashSet<string> Functions;
 
-        static public List<SymNode> CreateNodes(List<ExpNode>  expression)
+        static SymNodeBuilder()
         {
+            Functions = new HashSet<string>();
+            Functions.Add("sin");
+            Functions.Add("cos");
+        }
+
+
+        public static SymNode ParseString(string str)
+        {
+            var t = new Tokenizer(str, Functions);
+            var l = t.GetTokenList();
+
+            ExpressionBuilder eb = new ExpressionBuilder(l);
+
+            var enodes = eb.Parse();
+
+            var result = CreateNodes(enodes);
+            return result;
+        }
+
+
+        static public SymNode CreateNodes(List<ExpNode> expression)
+        {
+            if (expression.Count > 1)
+            { 
+                throw new ApplicationException(
+                        string.Format("Source expression has multiple ({0}) root nodes.", expression.Count)
+                        );
+            }
+
             List<SymNode> results = new List<SymNode>();
 
 
-            foreach(var en in expression)
-            {
-                results.Add(ProcessExpNode(en));
-            }
+            var result = ProcessExpNode(expression[0]);
 
-            return results;
+            return result;
         }
 
         static SymNode ProcessExpNode(ExpNode enode)
@@ -68,6 +95,13 @@ namespace SSMS.Parser
                     node = new VarNode(enode.String);
                     break;
                 case TokenTypes.Function:
+                    if (children.Count > 1)
+                    {
+                        throw new ApplicationException(
+                                string.Format("Too many arguments for funcionts {0}.", enode.String)
+                                );
+                    }
+
                     switch (enode.String)
                     {
                         case "sin":

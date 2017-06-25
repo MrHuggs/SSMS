@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using SSMS.Nodes;
+using SSMS.Parser;
 
 namespace SSMS
 {
@@ -14,77 +15,13 @@ namespace SSMS
     {
         static void Main(string[] args)
         {
-            EvaluateTest();
-            DistributiveTransformTest();
-            ConstFoldTransformTest();
-            Cos2TransfromTest();
-            ProdNodeTest();
-        }
+            var node = SymNodeBuilder.ParseString("sin(x)^2");
 
-        static public void EvaluateTest()
-        {
-            PlusNode plus_node = new PlusNode();
-            plus_node.AddChild(new ConstNode(4));
-            plus_node.AddChild(new ConstNode(5));
-
-            plus_node.PrintValue();
-
-            ProdNode prod_node = new ProdNode();
-            prod_node.AddChild(new ConstNode(6));
-            prod_node.AddChild(new VarNode("x"));
-            prod_node.AddChild(new ConstNode(-7));
-            prod_node.PrintValue();
-
-            plus_node.AddChild(prod_node);
-            plus_node.PrintValue();
+            node.Print();
 
         }
 
-        static  public void DistributiveTransformTest()
-        {
-            ProdNode p = new ProdNode();
-            PlusNode plus_node = new PlusNode();
-            plus_node.AddChild(new VarNode("a"));
-            plus_node.AddChild(new VarNode("b"));
-            plus_node.PrintValue();
-            p.AddChild(plus_node);
-            p.AddChild(new ConstNode(4));
-
-            p.PrintValue();
-            var dist_res = DistributiveTransform.TryDistributeProdNode(p);
-            dist_res.Print();
-            dist_res.PrintValue();
-
-        }
-
-        static public void ConstFoldTransformTest()
-        {/*
-            ProdNode p = new ProdNode();
-
-            p.AddChild(new ConstNode(4));
-            Debug.Assert(!ConstFoldTransform.Transform(p));
-
-            p.AddChild(new ConstNode(-4));
-            Debug.Assert(ConstFoldTransform.Transform(p));
-            Debug.Assert(p.ToString() == "-16");
-
-            p.AddChild(new VarNode("a"));
-            Debug.Assert(!ConstFoldTransform.Transform(p));
-            p.AddChild(new ConstNode(-1));
-            Debug.Assert(ConstFoldTransform.Transform(p));
-            Debug.Assert(p.ToString() == "16a");
-
-            p.AddChild(new ConstNode(1.0/ 16.0));
-            Debug.Assert(ConstFoldTransform.Transform(p));
-            Debug.Assert(p.ToString() == "a");
-
-            p.AddChild(new ConstNode(25.0));
-            p.AddChild(new ConstNode(0));
-            Debug.Assert(ConstFoldTransform.Transform(p));
-            Debug.Assert(p.ToString() == "0");
-            */
-        }
-
+    
 
 
         static public void Cos2TransfromTest()

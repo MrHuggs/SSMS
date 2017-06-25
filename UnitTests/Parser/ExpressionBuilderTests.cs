@@ -14,14 +14,6 @@ namespace UnitTests.Parser
         [TestCase]
         public void TestParse()
         {
-            Tokenizer t;
-            List<Token> l;
-            var functions = new HashSet<string>();
-            functions.Add("sin");
-            functions.Add("cos");
-
-            t = new Tokenizer("a*b+d4.53(xs/tt)", functions);
-            l = t.GetTokenList();
 
             Tuple<string, string>[] tests =
             {
@@ -30,19 +22,16 @@ namespace UnitTests.Parser
                 Tuple.Create("+3--2", "3-(-2)"),
                 Tuple.Create("sin(2)", "sin(2)"),
                 Tuple.Create("2+3", "2+3"),
+                Tuple.Create("2^2", "2^2"),
+                Tuple.Create("sin(x)^2", "sin(x)^2"),
                 Tuple.Create("cos(f) + 3", "3+cos(f)"),
                 Tuple.Create("sin(cos(4*f) + 3 - cos(4*x)/23)","sin(3+cos(4*f)-(cos(4*x)*23^-1))"),
+                Tuple.Create("sin(x)^2 + cos(x)^2 / (x + y + x)", "sin(x)^2+cos(x)^2*(x+y+x)^-1"),
             };
 
             foreach (var s in tests)
             {
-                t = new Tokenizer(s.Item1, functions);
-                l = t.GetTokenList();
-
-                ExpressionBuilder eb = new ExpressionBuilder(l);
-
-                var node = SymNodeBuilder.CreateNodes(eb.Parse())[0];
-                eb.Print();
+                var node = SymNodeBuilder.ParseString(s.Item1);
 
                 Assert.AreEqual(s.Item2, node.ToString());
             }
@@ -53,32 +42,30 @@ namespace UnitTests.Parser
         public void TestFailParse()
         {
 
-            Tokenizer t;
-            List<Token> l;
-            var functions = new HashSet<string>();
-            functions.Add("sin");
-            functions.Add("cos");
-
-            t = new Tokenizer("a*b+d4.53(xs/tt)", functions);
-            l = t.GetTokenList();
-
             string[] tests =
             {
+                "sin(13, 3)",
+                "4*(x x)",
+                "(x x)",
                 "f**3",
                 "x*(4+f",
                 "x*4+f)",
-                //"x x",
              };
 
 
             foreach (var s in tests)
             {
-                t = new Tokenizer(s, functions);
-                l = t.GetTokenList();
+                bool failed = false;
+                try
+                {
+                    SymNodeBuilder.ParseString(s);
+                }
+                catch (Exception)
+                {
+                    failed = true;
+                }
 
-                ExpressionBuilder eb = new ExpressionBuilder(l);
-
-                Assert.Throws(typeof(ApplicationException), () => eb.Parse());
+                Assert.AreEqual(true, failed);
             }
 
         }

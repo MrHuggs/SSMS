@@ -99,8 +99,8 @@ namespace SSMS.Parser
 
         public Tokenizer(string buffer, HashSet<String> functions = null)
         {
-            // Save off the string and remove any whitespace:
-            Buffer = buffer.Replace(" ", "");
+            // If the input buffer has whitespace, that's okay.
+            Buffer = buffer;
             Pos = 0;
             Functions = functions;
         }
@@ -141,7 +141,13 @@ namespace SSMS.Parser
         public Token NextToken()
         {
             var next = new Token();
-            var c = NextChar();
+
+            char c;
+            do
+            {
+                c = NextChar();
+            } while (Char.IsWhiteSpace(c));
+
             switch (c)
             {
                 case '+':

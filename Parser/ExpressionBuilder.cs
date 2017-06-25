@@ -28,11 +28,14 @@ namespace SSMS.Parser
     public class ExpressionBuilder
     {
         public List<ExpNode> Output = new List<ExpNode>();
+
+        // Actually, used as a stack of operators:
         List<TokenTypes> Operators = new List<TokenTypes>();
 
-        List<Token> Tokens; // This is the innput toke stream.
+        List<Token> Tokens; // This is the input token stream.
         int Index;
         Token PeekNext() { return Tokens[Index]; }
+
         void Advance()
         {
             // Consume the next token. If we are at the end, just stay at the end token.
@@ -57,7 +60,7 @@ namespace SSMS.Parser
             Debug.Assert(Tokens.Last().Type == TokenTypes.End);
             Index = 0;
         }
-
+                
         void PopOperator()
         {
             int opcount = Operators.Count;
@@ -147,95 +150,111 @@ namespace SSMS.Parser
 
                 if (next.Type == TokenTypes.RParen)
                 {
-                    for (;;)
-                    {
-                        if (Operators.Count == 0)
-                            Throw("Umatched parenthesis");
-
-                        if (Operators.Last() == TokenTypes.LParen)
-                        {
-                            Operators.RemoveAt(Operators.Count - 1);
-
-                            if (Operators.Count > 0 && Operators.Last() == TokenTypes.Function)
-                            {
-                                Operators.RemoveAt(Operators.Count - 1);
-                                for (int i = Output.Count - 1; ; i--)
-                                {
-                                    Debug.Assert(i >= 0); // We should always be able to find a function call.
-                                    if (Output[i].FunctionTerminal == true)
-                                    {
-                                        Output[i].FunctionTerminal = false;
-                                        for (int j = i + 1; j < Output.Count; j++)
-                                        {
-                                            Output[i].Arguments.Add(Output[j]);
-                                        }
-                                        while (Output.Count > i + 1)
-                                            Output.RemoveAt(Output.Count - 1);
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                        PopOperator();
-                    }
+                    ParseClosingParen();
                     continue;
                 }
 
-                if (next.Type == TokenTypes.Plus || next.Type == TokenTypes.Minus)
-                {
-                    bool unary = false;
-
-                    if (Index == 1)     // As we have already advanced, this means first.
-                    {   // If the first token is +-, it must be unary:
-                        unary = true;
-                    }
-                    else
-                    {   // If the +/ follows any operator or (, is must be unary:
-                        var prev_token = Tokens[Index - 2].Type;
-                        if (prev_token >= TokenTypes.Plus && prev_token <= TokenTypes.LParen)
-                        {
-                            unary = true;
-                        }
-                    }
-
-                    if (unary)
-                    {
-                        Operators.Add(MakeUnary(next.Type));
+                if (ParseUnary(next))
                         continue;
-                    }
-
-                }
+                    
 
                 if (next.Type >= TokenTypes.Plus && next.Type <= TokenTypes.Exp)
                 {
-                    int next_prec = Precendece(next.Type);
-
-                    for (;;)
-                    {
-                        if (Operators.Count == 0)
-                            break;
-
-                        TokenTypes type = Operators.Last();
-                        int prec = Precendece(type);
-                        if (prec > next_prec || (prec == next_prec && IsLeftAssoc(next.Type)))
-                        {
-                            PopOperator();
-                        }
-                        else
-                            break;
-                    }
-                    Operators.Add(next.Type);
+                    ProcessOperator(next);
                     continue;
                 }
             }
 
+            // Input token stream has been processed - handle any remaining operators:
             while (Operators.Count > 0)
             {
                 PopOperator();
             }
 
             return Output;
+        }
+
+        void ProcessOperator(Token next)
+        {
+            int next_prec = Precendece(next.Type);
+
+            for (;;)
+            {
+                if (Operators.Count == 0)
+                    break;
+
+                TokenTypes type = Operators.Last();
+                int prec = Precendece(type);
+                if (prec > next_prec || (prec == next_prec && IsLeftAssoc(next.Type)))
+                {
+                    PopOperator();
+                }
+                else
+                    break;
+            }
+            Operators.Add(next.Type);
+        }
+
+        void ParseClosingParen()
+        {
+            for (;;)
+            {
+                if (Operators.Count == 0)
+                    Throw("Umatched parenthesis");
+
+                if (Operators.Last() == TokenTypes.LParen)
+                {
+                    Operators.RemoveAt(Operators.Count - 1);
+
+                    if (Operators.Count > 0 && Operators.Last() == TokenTypes.Function)
+                    {
+                        Operators.RemoveAt(Operators.Count - 1);
+                        for (int i = Output.Count - 1; ; i--)
+                        {
+                            Debug.Assert(i >= 0); // We should always be able to find a function call.
+                            if (Output[i].FunctionTerminal == true)
+                            {
+                                Output[i].FunctionTerminal = false;
+                                for (int j = i + 1; j < Output.Count; j++)
+                                {
+                                    Output[i].Arguments.Add(Output[j]);
+                                }
+                                while (Output.Count > i + 1)
+                                    Output.RemoveAt(Output.Count - 1);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                PopOperator();
+            }
+        }
+
+        bool ParseUnary(Token next)
+        {
+            if (next.Type != TokenTypes.Plus && next.Type != TokenTypes.Minus)
+                return false;
+
+            bool unary = false;
+
+            if (Index == 1)     // As we have already advanced, this means we are on the first token.
+            {   // If the first token is +-, it must be unary:
+                unary = true;
+            }
+            else
+            {   // If the +/ follows any operator or (, is must be unary:
+                var prev_token = Tokens[Index - 2].Type;
+                if (prev_token >= TokenTypes.Plus && prev_token <= TokenTypes.LParen)
+                {
+                    unary = true;
+                }
+            }
+            if (!unary)
+                return false;
+
+            Operators.Add(MakeUnary(next.Type));
+            return true;
         }
 
         public void Print()
