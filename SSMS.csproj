@@ -52,6 +52,9 @@
     <Compile Include="Nodes\DNode.cs" />
     <Compile Include="Nodes\NodeExtensions.cs" />
     <Compile Include="Nodes\TreeIterator.cs" />
+    <Compile Include="Parser\ExpressionBuilder.cs" />
+    <Compile Include="Parser\SymNodeBuilder.cs" />
+    <Compile Include="Parser\Tokenizer.cs" />
     <Compile Include="Transforms\ConstFoldTransform.cs" />
     <Compile Include="Nodes\ConstNode.cs" />
     <Compile Include="Transforms\Cos2Sin2Transform.cs" />

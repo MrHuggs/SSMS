@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SSMS;
+using SSMS.Nodes;
 
 
 // Helper to build some complex expressions:

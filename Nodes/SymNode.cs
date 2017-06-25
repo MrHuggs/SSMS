@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace SSMS
+namespace SSMS.Nodes
 {
     // List of all possible node types. Note that there are some intermediate helper subclasses
     // of SymNode that are not included.

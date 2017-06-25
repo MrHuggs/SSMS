@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using SSMS;
+using SSMS.Nodes;
 
 namespace UnitTests
 {
