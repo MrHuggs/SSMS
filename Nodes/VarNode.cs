@@ -48,5 +48,14 @@ namespace SSMS.Nodes
 
             return new ConstNode(0);
         }
+
+        public override void AssertValid()
+        {
+            base.AssertValid();
+            Debug.Assert(Var != null);
+            Debug.Assert(Var.Length >= 1);
+            foreach (var c in Var)
+                Debug.Assert(Char.IsLetter(c));
+        }
     }
 }

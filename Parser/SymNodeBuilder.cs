@@ -30,6 +30,8 @@ namespace SSMS.Parser
             var enodes = eb.Parse();
 
             var result = CreateNodes(enodes);
+
+            result.AssertValid();
             return result;
         }
 
@@ -86,7 +88,15 @@ namespace SSMS.Parser
                     node = children[0];
                     break;
                 case TokenTypes.UnaryMinus:
-                    node = new ProdNode(new ConstNode(-1), children[0]);
+                    if (children[0].Type == NodeTypes.Constant)
+                    {
+                        // Special case negating a constant to make the result nicer.
+                        // This is not strictly necessary, and would be fixed by invoking Simplify() later.
+                        ((ConstNode)children[0]).Value = -((ConstNode)children[0]).Value;
+                        node = children[0];
+                    }
+                    else
+                        node = new ProdNode(new ConstNode(-1), children[0]);
                     break;
                 case TokenTypes.Number:
                     node = new ConstNode(enode.Number);

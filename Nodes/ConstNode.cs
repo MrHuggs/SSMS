@@ -48,6 +48,5 @@ namespace SSMS.Nodes
         {
             return new ConstNode(0);
         }
-
     }
 }

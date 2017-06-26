@@ -38,6 +38,7 @@ namespace SSMS.Nodes
             if (result != null)
             {
                 Children.ForEach(node => { if (node.Type != Type) result.AddChild(node.DeepClone()); });
+                result.AssertValid();
             }
 
             return result;

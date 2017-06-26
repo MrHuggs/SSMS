@@ -121,6 +121,12 @@ namespace SSMS.Nodes
 
         public abstract SymNode Differentiate(string var);
 
+        // Check this node and its children for consistency:
+        [Conditional("DEBUG")]
+        public virtual void AssertValid()
+        {
+        }
+
         // Comparison function used where we are ordering nodes with Sort():
         static public int CompareNodes(SymNode a, SymNode b)
         {

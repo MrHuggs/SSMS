@@ -19,7 +19,7 @@ namespace UnitTests.Parser
             {
                 Tuple.Create("f + 3", "3+f"),       // Note that constants are formatted first
                 Tuple.Create("+3", "3"),
-                Tuple.Create("+3--2", "3-(-2)"),
+                Tuple.Create("+3--2", "3--2"),
                 Tuple.Create("sin(2)", "sin(2)"),
                 Tuple.Create("2+3", "2+3"),
                 Tuple.Create("2^2", "2^2"),

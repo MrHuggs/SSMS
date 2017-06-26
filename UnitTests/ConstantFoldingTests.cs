@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using SSMS;
 using SSMS.Nodes;
+using SSMS.Parser;
 
 
 namespace UnitTests
@@ -122,6 +123,18 @@ namespace UnitTests
             Assert.AreEqual("a^(-1-1-1+1+2)", merged.ToStringSorted());
             folded = merged.FoldConstants();
             Assert.AreEqual("1", folded.ToString());
+
+            prod = (ProdNode) SymNodeBuilder.ParseString("2*(2*x)");
+            merged = prod.Merge();
+            folded = merged.FoldConstants();
+            Assert.AreEqual("4*x", folded.ToString());
+
+            prod.AddChild(new CosNode(new VarNode("y")));
+            merged = prod.Merge();
+            folded = merged.FoldConstants();
+            Assert.AreEqual("4*x*cos(y)", folded.ToString());
+            
+
         }
 
         [TestCase]

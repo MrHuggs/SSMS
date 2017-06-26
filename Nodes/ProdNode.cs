@@ -126,16 +126,19 @@ namespace SSMS.Nodes
                 }
             }
 
-
             if (new_node.Children.Count == 0)
                 return new ConstNode(product);
 
             if (product != 1)
-            {
                 new_node.AddChild(new ConstNode(product));
-            }
-            return new_node;
 
+            if (new_node.Children.Count == 1)
+            {
+                // A product node should have at least two operands:
+                return new_node.Children[0];
+            }
+
+            return new_node;
         }
 
 
@@ -239,9 +242,10 @@ namespace SSMS.Nodes
             if (pairs.Count == 1)
                 return pairs[0].CreateNode();
 
-            PlusNode result = new PlusNode();
+            ProdNode result = new ProdNode();
             pairs.ForEach(pair => result.AddChild(pair.CreateNode()));
 
+            result.AssertValid();
             return result;
         }
 

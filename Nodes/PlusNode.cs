@@ -117,14 +117,16 @@ namespace SSMS.Nodes
             if (new_node.Children.Count == 0)
                 return new ConstNode(sum);
 
-            if (sum == 0)
+            if (sum != 0)
+                new_node.AddChild(new ConstNode(sum));
+
+            if (new_node.Children.Count == 1)
             {
-                return new_node;
+                // A plus node should have at least two operands:
+                return new_node.Children[0];
             }
 
-            new_node.AddChild(new ConstNode(sum));
             return new_node;
-
         }
 
 
@@ -233,6 +235,8 @@ namespace SSMS.Nodes
             if (result.ChildCount() == 0)
                 return new ConstNode(0);
 
+
+            result.AssertValid();
             return result;
         }
 

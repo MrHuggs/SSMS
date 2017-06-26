@@ -75,5 +75,12 @@ namespace SSMS.Nodes
                 Children.Add(other.Children[i].DeepClone());
             }
         }
+
+        public override void AssertValid()
+        {
+            base.AssertValid();
+            Debug.Assert(Children.Count > 1);
+            Children.ForEach(node => node.AssertValid());
+        }
     }
 }

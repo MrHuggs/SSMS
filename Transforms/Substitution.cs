@@ -32,7 +32,10 @@ namespace SSMS
 
             }
 
-            return temp_parent.GetChild(0);
+            var result =  temp_parent.GetChild(0);
+            result.AssertValid();
+
+            return result;
         }
     }
 

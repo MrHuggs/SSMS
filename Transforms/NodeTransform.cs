@@ -61,6 +61,11 @@ namespace SSMS
         {
             return ModifyTree(start_node, Simplifiers);
         }
+        public SymNode TrySimplify(SymNode start_node)
+        {
+            var result =  ModifyTree(start_node, Simplifiers);
+            return (result != null) ? result : start_node;
+        }
         public SymNode Expand(SymNode start_node)
         {
             return ModifyTree(start_node, Exapnders);
@@ -81,6 +86,13 @@ namespace SSMS
                     if (t.Attributes.Contains(TransformAttributes.Recursive))
                     {
                         updated = t.Apply(new_version);
+
+                        if (updated != null)
+                        {
+                            Debug.WriteLine("Recursively transformed:");
+                            Debug.WriteLine(new_version.ToString());
+                            Debug.WriteLine(updated.ToString());
+                        }
                     }
                     else
                     {
@@ -89,6 +101,7 @@ namespace SSMS
 
                     if (updated != null)
                     {
+                        updated.AssertValid();
                         new_version = updated;
                         change_count++;
                         transformed = true;
@@ -125,9 +138,11 @@ namespace SSMS
 
                     if (new_child != null)
                     {
-                        //Debug.WriteLine("Transformed:");
-                        //Debug.WriteLine(child.ToString());
-                        //Debug.WriteLine(new_child.ToString());
+                        new_child.AssertValid();
+
+                        Debug.WriteLine("Transformed:");
+                        Debug.WriteLine(child.ToString());
+                        Debug.WriteLine(new_child.ToString());
 
                         node.ReplaceChild(child, new_child);
                         return temp_parent.GetChild(0);

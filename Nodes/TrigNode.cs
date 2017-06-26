@@ -33,6 +33,12 @@ namespace SSMS.Nodes
             return Angle.IsEqual(((TrigNode)other).Angle);
         }
 
-
+        public override void AssertValid()
+        {
+            base.AssertValid();
+            Debug.Assert(Angle != null);
+            Angle.AssertValid();
+        }
+        
     }
 }

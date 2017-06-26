@@ -182,17 +182,27 @@ namespace SSMS.Nodes
                 double cur_exp = ((ConstNode)Exponent).Value;
 
                 PowerNode new_power = new PowerNode(Base.DeepClone(), new ConstNode(cur_exp-1));
+                var bdiff = Base.Differentiate(var);
 
-                ProdNode result = new ProdNode(new ConstNode(cur_exp), new_power);
+                ProdNode result = new ProdNode(bdiff, new ConstNode(cur_exp), new_power);
 
                 return result;
 
             }
-            // An expeonent that is not constant is not currently supported. We'll need a log node type, whic hwe don't
+            // An exponent that is not a constant is not currently supported. We'll need a log node type, which we don't
             // currently have.
 
             Debug.Assert(false);
             return null;
+        }
+
+        public override void AssertValid()
+        {
+            base.AssertValid();
+            Debug.Assert(Base != null);
+            Debug.Assert(Exponent != null);
+            Base.AssertValid();
+            Exponent.AssertValid();
         }
 
     }
