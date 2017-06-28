@@ -5,49 +5,30 @@ using System.Diagnostics;
 
 namespace SSMS.Nodes
 {
-    public class ProdNode : CommutativeNode
+    public class WedgeNode : CommutativeNode
     {
-        public ProdNode()
+        public WedgeNode()
         {
-            Type = NodeTypes.Prod;
+            Type = NodeTypes.Wedge;
         }
 
-        public ProdNode(params SymNode[] node_list) : this()
+        public WedgeNode(params SymNode[] node_list) : this()
         {
             Debug.Assert(node_list.Count() > 1);  // Product node must have at least 2 nodes.
             foreach (var node in node_list)
                 AddChild(node);
         }
 
-        // Helper: Given a list of nodes, clone the nodes and create a product node for their
-        // product, unless there is just one node, in which case just return the one.
-        public static SymNode FromProdList<T> (List<T> list) where T : SymNode
-        {
-            Debug.Assert(list.Count > 0);
-            if (list.Count == 1)
-                return list[0].DeepClone();
-            ProdNode result = new ProdNode();
-            list.ForEach(node => result.AddChild(node.DeepClone()));
-            return result;
-        }
-
         public override void Format(FormatBuilder fb)
         {
-            // The sort process puts constants behind variables. However, we normally write the constant term
-            // in front of variables. Handle this by writing our our children in two passes. First write
-            // out constants, then other children.
+            // Sorting is not allowed, so we just write elements in order.
             //
-            // This we get 10*a instead of a*10
+            // Have to pick a symbol for wedge product. We can't use caret (^) because that is 
+            // for exponentiation. I'll use $.
             //
+            
+
             int cnt = 0;
-            foreach(var node in Children)
-            {
-                if (node.Type != NodeTypes.Constant)
-                    continue;
-                if (cnt++ > 0)
-                    fb.Append('*');
-                fb.Append(node.ToString());
-            }
 
             foreach (var node in Children)
             {
@@ -55,25 +36,25 @@ namespace SSMS.Nodes
                     continue;
 
                 if (cnt++ > 0)
-                    fb.Append('*');
+                    fb.Append('$');
 
                 // Decide if the child needs to be parenthesized. We'll just use the
                 // operator precendece. This does mean you could see results like
                 // -34*-32.
                 bool need_paren;
-                if (node.Type >= NodeTypes.Prod)
+                if (node.Type >= NodeTypes.Wedge)
                 {
                     need_paren = true;  // Child has lower precedence.
                 }
                 else need_paren = false;
                 fb.Append(node.ToString(), need_paren);
-            }       
+            }
         }
 
 
         public override SymNode DeepClone()
         {
-            var n = new ProdNode();
+            var n = new WedgeNode();
             n.DeepCloneChildren(this);
 
             return n;
@@ -83,22 +64,8 @@ namespace SSMS.Nodes
         {
             foreach (var child in Children)
             {
-                if (child.IsZero())
-                    return true;
-            }
-            return false;
-        }
-        public override bool IsOne()
-        {
-            if (Children.Count == 0)
-                return false;
-
-            foreach (var child in Children)
-            {
-                if (!child.IsOne())
-                {
+                if (!child.IsZero())
                     return false;
-                }
             }
             return true;
         }
@@ -108,7 +75,7 @@ namespace SSMS.Nodes
             var new_node = new ProdNode();
 
             double product = 1;
-            foreach(var node in Children)
+            foreach (var node in Children)
             {
                 var new_child = node.FoldConstants();
                 if (new_child.IsZero())
@@ -144,16 +111,16 @@ namespace SSMS.Nodes
 
         public override SymNode Evaluate()
         {
-            var new_node = new ProdNode();
+            var new_node = new WedgeNode();
 
-            foreach(var node in Children)
+            foreach (var node in Children)
             {
                 new_node.AddChild(node.Evaluate());
             }
 
             return new_node.FoldConstants();
         }
-
+        /*
         class MergePair
         {
             public MergePair(SymNode node)
@@ -161,7 +128,7 @@ namespace SSMS.Nodes
                 if (node.Type == NodeTypes.Power)
                 {
                     Base = ((PowerNode)node).Base;
-                    ExponentNodes.Add( ((PowerNode)node).Exponent);
+                    ExponentNodes.Add(((PowerNode)node).Exponent);
                 }
                 else
                 {
@@ -199,8 +166,8 @@ namespace SSMS.Nodes
                 if (ExponentNodes.Count == 0)
                 {
                     Debug.Assert(IntPower > 0);
-                    return (IntPower == 1) ?  
-                                    Base.DeepClone() : 
+                    return (IntPower == 1) ?
+                                    Base.DeepClone() :
                                     new PowerNode(Base.DeepClone(), new ConstNode((double)IntPower));
                 }
 
@@ -210,7 +177,7 @@ namespace SSMS.Nodes
                 return new PowerNode(Base.DeepClone(), PlusNode.FromPlusList(ExponentNodes));
             }
         };
-        
+
         public SymNode MergeChildrenTogether()
         {
             // Merge children together that have a the same base: e.g. a^2*a^(x+2) -> a^{x+4})
@@ -219,7 +186,7 @@ namespace SSMS.Nodes
 
             foreach (var v in Children)
             {
-                
+
                 for (int i = 0; ; i++)
                 {
                     if (i == pairs.Count)
@@ -242,7 +209,7 @@ namespace SSMS.Nodes
             if (pairs.Count == 1)
                 return pairs[0].CreateNode();
 
-            ProdNode result = new ProdNode();
+            WedgeNode result = new WedgeNode();
             pairs.ForEach(pair => result.AddChild(pair.CreateNode()));
 
             result.AssertValid();
@@ -252,7 +219,7 @@ namespace SSMS.Nodes
 
         public override SymNode Merge()
         {
-            ProdNode r1 = (ProdNode) MergeChildrenUp();
+            WedgeNode r1 = (WedgeNode)MergeChildrenUp();
 
             if (r1 != null)
             {
@@ -261,16 +228,19 @@ namespace SSMS.Nodes
             }
 
             return MergeChildrenTogether();
-        }
+        }*/
 
         public override SymNode Differentiate(string var)
         {
+            throw new ApplicationException("Cannot differentiate a wedge product.");
+
+            /*
             PlusNode result = new PlusNode();
 
             for (int i = 0; i < Children.Count; i++)
             {
                 SymNode dif = Children[i].Differentiate(var);
-                ProdNode prod = new ProdNode();
+                WedgeNode prod = new WedgeNode();
 
                 prod.AddChild(dif);
                 for (int j = 0; j < Children.Count; j++)
@@ -282,7 +252,7 @@ namespace SSMS.Nodes
 
                 result.AddChild(prod);
             }
-            return result;
+            return result;*/
         }
 
     }

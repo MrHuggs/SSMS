@@ -25,6 +25,7 @@ namespace SSMS.Nodes
         Power,
         Div,
         Prod,
+        Wedge,
         Plus,
     };
     
@@ -103,7 +104,7 @@ namespace SSMS.Nodes
         public virtual bool IsZero() { return false; }
         public virtual bool IsOne() { return false; }
 
-        // Return a node representing this node if constant folding is allows. This means
+        // Return a new node representing this node if constant folding is allowed. This means
         // addition, multiplication, and division are allowed.
         public abstract SymNode FoldConstants();
 

@@ -17,6 +17,37 @@ namespace SSMS.Nodes
             Children.Sort((a, b) => SymNode.CompareNodes(a, b));
         }
 
+        public override bool IsEqual(SymNode other)
+        {
+            if (other.Type != Type)
+                return false;
+
+            CommutativeNode pnode = (CommutativeNode)other;
+            var ocount = pnode.Children.Count;
+
+            if (ocount != Children.Count)
+                return false;
+
+            // The other list might be in a different order.
+            bool[] used = new bool[ocount];
+
+            for (int i = 0; i < ocount; i++)
+            {
+                SymNode child = Children[i];
+                for (int j = 0; ; j++)
+                {
+                    if (j == ocount)
+                        return false;   // failed to find a match.
+                    if (used[j])
+                        continue;
+
+                    if (child.IsEqual(pnode.Children[i]))
+                        break;
+                }
+            }
+            return true;
+        }
+
 
         public CommutativeNode MergeChildrenUp()
         {

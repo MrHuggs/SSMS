@@ -35,7 +35,7 @@ namespace SSMS
             {
                 if (index == prod_node.ChildCount())
                 {
-                    // Didn't fine a plus node, so nothing to do.
+                    // Didn't find a plus node, so nothing to do.
                     return null;
                 }
                 var child = prod_node.GetChild(index);

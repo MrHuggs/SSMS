@@ -52,6 +52,7 @@
     <Compile Include="Nodes\DNode.cs" />
     <Compile Include="Nodes\NodeExtensions.cs" />
     <Compile Include="Nodes\TreeIterator.cs" />
+    <Compile Include="Nodes\WedgeNode.cs" />
     <Compile Include="Parser\ExpressionBuilder.cs" />
     <Compile Include="Parser\SymNodeBuilder.cs" />
     <Compile Include="Parser\Tokenizer.cs" />
