@@ -105,7 +105,8 @@ namespace SSMS.Nodes
         public virtual bool IsOne() { return false; }
 
         // Return a new node representing this node if constant folding is allowed. This means
-        // addition, multiplication, and division are allowed.
+        // addition, multiplication, and division are allowed. For non-commuative nodes (e.g wedge),
+        // this could also mean rordering into a standard order.
         public abstract SymNode FoldConstants();
 
         // Return a node repesenting this node (and it's children) if numerial calculation is performed.

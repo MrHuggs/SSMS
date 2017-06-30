@@ -62,47 +62,63 @@ namespace SSMS.Nodes
 
         public override bool IsZero()
         {
+            var diffs = new List<DNode>();
             foreach (var child in Children)
             {
-                if (!child.IsZero())
-                    return false;
+                if (child.IsZero())
+                    return true;
+
+                if (child.Type == NodeTypes.Differential)
+                {
+                    var dnode = (DNode)child;
+                    foreach(var od in diffs)
+                    {
+                        if (od.IsEqual(dnode))
+                        {
+                            // A wedge proudct with repeated differentials is 0:
+                            return true;
+                        }
+                    }
+                    diffs.Add(dnode);
+                }
             }
-            return true;
+            return false;
         }
 
         public override SymNode FoldConstants()
         {
-            var new_node = new ProdNode();
+            // If this node consists entirely of DNoodes, then put in standard
+            // order.
+            
+            var new_node = new WedgeNode();
 
-            double product = 1;
+            bool all_differentials = true;
             foreach (var node in Children)
             {
                 var new_child = node.FoldConstants();
+
                 if (new_child.IsZero())
                     return new ConstNode(0);
+
                 if (new_child.IsOne())
                     continue;
 
-                if (new_child.Type == NodeTypes.Constant)
-                {
-                    product *= ((ConstNode)new_child).Value;
-                }
-                else
-                {
-                    new_node.AddChild(new_child);
-                }
+                new_node.AddChild(new_child);
+                if (new_child.Type != NodeTypes.Differential)
+                    all_differentials = false;
             }
 
-            if (new_node.Children.Count == 0)
-                return new ConstNode(product);
 
-            if (product != 1)
-                new_node.AddChild(new ConstNode(product));
-
-            if (new_node.Children.Count == 1)
+            if (all_differentials)
             {
-                // A product node should have at least two operands:
-                return new_node.Children[0];
+                if (new_node.IsZero())
+                    return new ConstNode(0);
+
+                int sgn = new_node.SortDNodes();
+                if (sgn != 1)
+                {
+                    return new ProdNode(new ConstNode(sgn), new_node);
+                }
             }
 
             return new_node;
@@ -114,145 +130,122 @@ namespace SSMS.Nodes
             var new_node = new WedgeNode();
 
             foreach (var node in Children)
-            {
                 new_node.AddChild(node.Evaluate());
-            }
 
             return new_node.FoldConstants();
         }
-        /*
-        class MergePair
+
+        // See if a node is a product node with a single differential factor.
+        bool FactorProdNode(SymNode node, ref ProdNode prod, out DNode dnode)
         {
-            public MergePair(SymNode node)
+            dnode = null;
+
+            if (node.Type != NodeTypes.Prod)
+                return false;
+
+            var parent = (ProdNode)node;
+            foreach(var child in parent.Children)
             {
-                if (node.Type == NodeTypes.Power)
+                if (child.Type == NodeTypes.Differential)
                 {
-                    Base = ((PowerNode)node).Base;
-                    ExponentNodes.Add(((PowerNode)node).Exponent);
-                }
-                else
-                {
-                    Base = node;
-                    IntPower = 1;
+                    if (dnode != null)
+                    {
+                        throw new ApplicationException(
+                            string.Format("Expression {0} has multiple differential terms multiplied together.", parent.ToString())
+                            );
+                    }
+                    dnode = (DNode) child.DeepClone();
                 }
             }
-            public SymNode Base;
-            public int IntPower = 0;
-            public List<SymNode> ExponentNodes = new List<SymNode>();
 
-            public bool AttemptMerge(SymNode other)
+            if (dnode == null)
             {
-                if (other.Type == NodeTypes.Power)
-                {
-                    PowerNode op = (PowerNode)other;
-
-                    if (op.Base.IsEqual(Base))
-                    {
-                        ExponentNodes.Add(op.Exponent);
-                        return true;
-                    }
-                }
-                else if (other.IsEqual(Base))
-                {
-                    IntPower++;
-                    return true;
-                }
-
+                // If we haven't found a DNode at this point, factorization is not possible:
                 return false;
             }
 
-            public SymNode CreateNode()
+            foreach (var child in parent.Children)
             {
-                if (ExponentNodes.Count == 0)
-                {
-                    Debug.Assert(IntPower > 0);
-                    return (IntPower == 1) ?
-                                    Base.DeepClone() :
-                                    new PowerNode(Base.DeepClone(), new ConstNode((double)IntPower));
-                }
-
-                if (IntPower > 0)
-                    ExponentNodes.Add(new ConstNode((double)IntPower));
-
-                return new PowerNode(Base.DeepClone(), PlusNode.FromPlusList(ExponentNodes));
+                if (child.Type != NodeTypes.Differential)
+                    prod.AddChild(child.DeepClone());
             }
-        };
+            return true;
+        }
 
-        public SymNode MergeChildrenTogether()
+        public int SortDNodes()
         {
-            // Merge children together that have a the same base: e.g. a^2*a^(x+2) -> a^{x+4})
-            var pairs = new List<MergePair>();
-            bool merged = false;        // Did any merging occur.
-
-            foreach (var v in Children)
+            // If this node has all DNode terms, sort the DNodes and return sign of
+            // the required permuation.
+            //
+            // Since we expect the number of dnodes to be small, we will just do a bubble sort.
+            //
+            int sgn = 1;
+            bool swapped;
+            do
             {
+                swapped = false;
 
-                for (int i = 0; ; i++)
+                for (int j = 1; j < Children.Count; j++)
                 {
-                    if (i == pairs.Count)
-                    {
-                        pairs.Add(new MergePair(v));
-                        break;
-                    }
+                    DNode cur = (DNode)Children[j];
+                    DNode prev = (DNode)Children[j-1];
 
-                    if (pairs[i].AttemptMerge(v))
+                    if (cur.Var.CompareTo(prev.Var) < 0)
                     {
-                        merged = true;
-                        break;
+                        sgn *= -1;
+                        Children[j] = Children[j - 1];
+                        Children[j - 1] = cur;
+
+                        swapped = true;
                     }
                 }
             }
-
-            if (!merged)
-                return null;
-
-            if (pairs.Count == 1)
-                return pairs[0].CreateNode();
-
-            WedgeNode result = new WedgeNode();
-            pairs.ForEach(pair => result.AddChild(pair.CreateNode()));
-
-            result.AssertValid();
-            return result;
+            while (swapped);
+            return sgn;
         }
 
 
         public override SymNode Merge()
         {
-            WedgeNode r1 = (WedgeNode)MergeChildrenUp();
+            // Attempt to pull out DNodes (differentials) from our children.
+            var wedge = new WedgeNode();
+            var prod = new ProdNode();
 
-            if (r1 != null)
+            bool factored = true;
+            foreach(var child in Children)
             {
-                var merge_childen = r1.MergeChildrenTogether();
-                return (merge_childen != null) ? merge_childen : r1;
+                DNode dnode;
+                if (FactorProdNode(child, ref prod, out dnode))
+                {
+                    wedge.AddChild(dnode);
+                }
+                else
+                {
+                    factored = false;
+                    wedge.AddChild(child);
+                }
             }
 
-            return MergeChildrenTogether();
-        }*/
+            if (factored == true)
+            {
+                int sgn = wedge.SortDNodes();
+                if (sgn != 1)
+                    prod.AddChild(new ConstNode(sgn));
+            }
+
+            if (prod.ChildCount() > 0)
+            {
+                prod.AddChild(wedge);
+                prod.AssertValid();
+                return prod;
+            }
+            wedge.AssertValid();
+            return wedge;
+        }
 
         public override SymNode Differentiate(string var)
         {
             throw new ApplicationException("Cannot differentiate a wedge product.");
-
-            /*
-            PlusNode result = new PlusNode();
-
-            for (int i = 0; i < Children.Count; i++)
-            {
-                SymNode dif = Children[i].Differentiate(var);
-                WedgeNode prod = new WedgeNode();
-
-                prod.AddChild(dif);
-                for (int j = 0; j < Children.Count; j++)
-                {
-                    if (j == i)
-                        continue;
-                    prod.AddChild(Children[j].DeepClone());
-                }
-
-                result.AddChild(prod);
-            }
-            return result;*/
         }
 
     }
