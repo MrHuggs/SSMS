@@ -23,7 +23,6 @@ namespace SSMS.Nodes
         Sin,
         Tan,
         Power,
-        Div,
         Prod,
         Wedge,
         Plus,
@@ -107,27 +106,67 @@ namespace SSMS.Nodes
         // Return a new node representing this node if constant folding is allowed. This means
         // addition, multiplication, and division are allowed. For non-commuative nodes (e.g wedge),
         // this could also mean rordering into a standard order.
+        // Acts recursively.
         public abstract SymNode FoldConstants();
 
         // Return a node repesenting this node (and it's children) if numerial calculation is performed.
         // So, for example, a cos node with a constant argument of .1 would return a constant node
         // of value 0.99999847691328769880290124792571.
         // If nummerical errors would occur (for example, divide by 0), the arguments are left alone.
+        // Acts recursively.
         public abstract SymNode Evaluate();
 
 
         // Merge children together, or possibly into this node, and return a new node (with new children)
         // if any merging was done. Note that the type of node may change.
         // This is best done after constants have been folded.
+        // Does NOT act recursively.
         public virtual SymNode Merge() { return null; }
 
         public abstract SymNode Differentiate(string var);
 
+        // Does this node or any of its children have a differential (e.g. DNode) appearing as a linear term.
+        // Note that non-linear terms of differentials are not allowed.
+        public virtual bool HasDifferential() { return false; }
+
         // Check this node and its children for consistency:
         [Conditional("DEBUG")]
-        public virtual void AssertValid()
+        public virtual void AssertValid()  { }
+
+        // Make sure this tree doesn't have any doubly linked nodes:
+        [Conditional("DEBUG")]
+        public void CheckTree()
         {
+            var ti = new TreeIterator(this);
+            var hs = new HashSet<SymNode>();
+            while (ti.Next())
+            {
+                Debug.Assert(!hs.Contains(ti.Cur));
+                hs.Add(ti.Cur);
+            }
         }
+
+        // Make sure nodes aren't linked to two different trees.
+        [Conditional("DEBUG")]
+        public void CheckDisjoint(SymNode other)
+        {
+            var ti = new TreeIterator(this);
+            var hs = new HashSet<SymNode>();
+            while (ti.Next())
+            {
+                Debug.Assert(!hs.Contains(ti.Cur));
+                hs.Add(ti.Cur);
+            }
+            ti = new TreeIterator(other);
+            hs = new HashSet<SymNode>();
+            while (ti.Next())
+            {
+                Debug.Assert(!hs.Contains(ti.Cur));
+                hs.Add(ti.Cur);
+            }
+        }
+
+
 
         // Comparison function used where we are ordering nodes with Sort():
         static public int CompareNodes(SymNode a, SymNode b)

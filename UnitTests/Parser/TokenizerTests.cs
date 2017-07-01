@@ -40,6 +40,8 @@ namespace UnitTests.Parser
                     "4+2*(5+3+3)",
                     "sin(,2,3)",
                     "a*b+d4..53(xs/tt)",    // Okay - tokenizes asd 4. and then .53
+                    @"d_aa/\d_b",
+                    "d_4d_4",               // Not valid to parse, but should tokenize
                     ""
                 };
 
@@ -54,7 +56,6 @@ namespace UnitTests.Parser
 
         }
 
-        void foo() { }
         [TestCase]
         public void TestFailTokenize()
         {

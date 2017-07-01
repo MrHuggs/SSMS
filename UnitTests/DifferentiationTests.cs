@@ -27,6 +27,7 @@ namespace UnitTests
                 Tuple.Create("(x^2+y^2)^(1/2)", "y", "y*(x^2+y^2)^-.5"),
                 Tuple.Create("(1-(x^2+y^2)^(1/2))^3", "x", " -(3*x*(1-(x^2 + y^2)^.5)^2)*(x^2 + y^2)^-.5"),
                 Tuple.Create("x^3+x+3", "x", "3*x^2+1"),
+                Tuple.Create("x^3+x", "x", "3*x^2+1"),
            };
 
             for (int i = tests.Length - 1; i >= 0; i--)

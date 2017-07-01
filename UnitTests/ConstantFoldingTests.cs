@@ -65,7 +65,67 @@ namespace UnitTests
             Assert.AreEqual("1", folded.ToString());
         }
 
+
         [TestCase]
+        public void WedgeMergeTest()
+        {
+            var pt = SymNodeBuilder.ParseString(@"-a*b");
+            pt = pt.Merge();
+            Assert.AreEqual(@"-a*b", pt.ToString());
+
+            var x = SymNodeBuilder.ParseString(@"d_y/\d_x");
+            Assert.AreEqual(x.Merge(), null);
+            var xfc = x.FoldConstants();
+            Assert.AreEqual(@"-(d_x/\d_y)", xfc.ToString());
+
+            var w = SymNodeBuilder.ParseString(@"d_y/\d_x/\d_z");
+            var merged = w.Merge();
+            var folded = merged.FoldConstants();
+            Assert.AreEqual(@"-(d_x/\d_y/\d_z)", folded.ToString());
+
+            var x_wedge_w = new WedgeNode(x, w);
+            Assert.AreEqual(@"(d_y/\d_x)/\((d_y/\d_x)/\d_z)", x_wedge_w.ToString());
+            var x_wedge_w_merged = x_wedge_w.Merge();
+            Assert.AreEqual(@"d_y/\d_x/\(d_y/\d_x)/\d_z", x_wedge_w_merged.ToString());
+
+            var x_wedge_w_simple = TransformsList.Inst().Simplify(x_wedge_w);
+            Assert.AreEqual(@"0", x_wedge_w_simple.ToString());
+
+        }
+
+        [TestCase]
+        public void WedgeMergeTestEx()
+        {
+        
+            Tuple<string, string, string>[] tests =
+            {
+                Tuple.Create(@"d_x/\(d_x+d_y)", @"d_x/\(d_x+d_y)", ""),       // Note that constants are formatted first
+                Tuple.Create(@"d_x/\4", @"4*d_x", ""),       // Note that constants are formatted first
+                Tuple.Create(@"d_x/\(4+a+sin(x))", @"(4+a+sin(x))*d_x", ""),       // Note that constants are formatted first
+                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*((d_x+d_y)/\d_x)", ""),       // Note that constants are formatted first
+                Tuple.Create(@"(d_x+d_z)/\(d_x+d_y)", @"(d_x+d_z)/\(d_x+d_y)", ""),       // Note that constants are formatted first
+            };
+
+            for (int i = tests.Length - 1; i >= 0; i--)
+            {
+                var s = tests[i];
+                var node = SymNodeBuilder.ParseString(s.Item1);
+
+                var simple = TransformsList.Inst().Simplify(node);
+                if (simple == null) simple = node;
+                Assert.AreEqual(s.Item2, simple.ToString());
+
+                if (s.Item3 != "")
+                {
+                    var ex = TransformsList.Inst().Expand(simple);
+                    Assert.AreEqual(s.Item3, ex.ToString());
+                }
+            }
+
+}
+
+
+[TestCase]
         public void PlusMergeTest()
         {
             ProdNode prod;
@@ -133,8 +193,6 @@ namespace UnitTests
             merged = prod.Merge();
             folded = merged.FoldConstants();
             Assert.AreEqual("4*x*cos(y)", folded.ToString());
-            
-
         }
 
         [TestCase]
@@ -165,8 +223,8 @@ namespace UnitTests
             Assert.AreEqual("a+a*(b*c)*cos(g^h)", plus.ToStringSorted());
 
             Assert.AreEqual(null, tlist.Expand(plus));
-            merged = tlist.Simplify(plus);
-            Assert.AreEqual("a+a*b*c*cos(g^h)", merged.ToStringSorted());
+            var v = tlist.Simplify(plus);
+            Assert.AreEqual("a+a*b*c*cos(g^h)", v.ToStringSorted());
         }
 
 

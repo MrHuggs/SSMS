@@ -15,10 +15,10 @@ namespace SSMS
     {
         static void Main(string[] args)
         {
-            var node = SymNodeBuilder.ParseString("sin(x)^2");
-
-            node.Print();
-
+            var w = SymNodeBuilder.ParseString(@"-(d_x/\d_y)/\-(d_x/\d_y)/\d_z");
+            
+            var x_wedge_w_simple = TransformsList.Inst().Simplify(w);
+            Debug.Assert(x_wedge_w_simple.IsZero());
         }
 
     

@@ -72,5 +72,49 @@ namespace SSMS.Nodes
             Debug.Assert(Children.Count > 1);
             Children.ForEach(node => node.AssertValid());
         }
+
+        public override bool HasDifferential()
+        {
+            foreach (var v in Children)
+            {
+                if (v.HasDifferential())
+                    return true;
+            }
+            return false;
+        }
+
+        public ChildListNode MergeChildrenUp()
+        {
+            // If we have any children that are the same type, move their nodes into us.
+            // Return null if no merging occured.
+            bool can_merge = false;
+            foreach (var v in Children)
+            {
+                if (v.Type == Type)
+                {
+                    can_merge = true;
+                    break;
+                }
+            }
+            if (!can_merge)
+                return null;
+
+                    
+            ChildListNode result = (ChildListNode)Activator.CreateInstance(GetType()); // Create new object of the same type.
+
+            foreach (var v in Children)
+            {
+                if (v.Type == Type)
+                {
+                    ((CommutativeNode)v).Children.ForEach(node => { result.AddChild(node.DeepClone()); });
+                }
+                else
+                    result.AddChild(v.DeepClone());
+            }
+
+            result.AssertValid();
+
+            return result;
+        }
     }
 }

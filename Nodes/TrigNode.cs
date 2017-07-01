@@ -38,6 +38,8 @@ namespace SSMS.Nodes
             base.AssertValid();
             Debug.Assert(Angle != null);
             Angle.AssertValid();
+
+            Debug.Assert(!Angle.HasDifferential());
         }
         
     }

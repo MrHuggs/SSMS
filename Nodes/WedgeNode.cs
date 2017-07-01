@@ -36,7 +36,7 @@ namespace SSMS.Nodes
                     continue;
 
                 if (cnt++ > 0)
-                    fb.Append('$');
+                    fb.Append(@"/\");
 
                 // Decide if the child needs to be parenthesized. We'll just use the
                 // operator precendece. This does mean you could see results like
@@ -135,41 +135,40 @@ namespace SSMS.Nodes
             return new_node.FoldConstants();
         }
 
-        // See if a node is a product node with a single differential factor.
-        bool FactorProdNode(SymNode node, ref ProdNode prod, out DNode dnode)
+        void FactorWedges(SymNode child, List<SymNode> non_wedge, List<SymNode> wedge)
         {
-            dnode = null;
 
-            if (node.Type != NodeTypes.Prod)
-                return false;
-
-            var parent = (ProdNode)node;
-            foreach(var child in parent.Children)
+            if (child.Type == NodeTypes.Wedge)
             {
-                if (child.Type == NodeTypes.Differential)
+                var wedge_node = (WedgeNode)child;
+                foreach (var v in wedge_node.Children)
                 {
-                    if (dnode != null)
-                    {
-                        throw new ApplicationException(
-                            string.Format("Expression {0} has multiple differential terms multiplied together.", parent.ToString())
-                            );
-                    }
-                    dnode = (DNode) child.DeepClone();
+                    if (v.HasDifferential())
+                        wedge.Add(v);
+                    else
+                        non_wedge.Add(v);
                 }
+                return;
             }
 
-            if (dnode == null)
-            {
-                // If we haven't found a DNode at this point, factorization is not possible:
-                return false;
-            }
+            if (child.HasDifferential())
+                wedge.Add(child);
+            else
+                non_wedge.Add(child);
+        }
 
-            foreach (var child in parent.Children)
+        void FactorChild(SymNode child, List<SymNode> non_wedge, List<SymNode> wedge)
+        {
+            if (child.Type == NodeTypes.Prod)
             {
-                if (child.Type != NodeTypes.Differential)
-                    prod.AddChild(child.DeepClone());
+                var prod = (ProdNode)child;
+                foreach (var v in prod.Children)
+                {
+                    FactorWedges(v, non_wedge, wedge);
+                }
+                return;
             }
-            return true;
+            FactorWedges(child, non_wedge, wedge);
         }
 
         public int SortDNodes()
@@ -203,50 +202,53 @@ namespace SSMS.Nodes
             while (swapped);
             return sgn;
         }
-
-
+ 
         public override SymNode Merge()
         {
-            // Attempt to pull out DNodes (differentials) from our children.
-            var wedge = new WedgeNode();
+            var factors = new List<SymNode>();
+            var wedges = new List<SymNode>();
+
+            foreach (var v in Children)
+                FactorChild(v, factors, wedges);
+
+            SymNode new_wedges;
+
+            if (wedges.Count > 1)
+            {
+                var new_wedge = new WedgeNode();
+
+                foreach (var v in wedges)
+                    new_wedge.AddChild(v.DeepClone());
+
+                new_wedges = new_wedge;
+            }
+            else if (wedges.Count == 1)
+            {
+                new_wedges = wedges[0].DeepClone();
+            }
+            else
+                new_wedges = null;
+
+            if (factors.Count == 0)
+            {
+                if (new_wedges.IsEqual(this))
+                {
+                    return null;    // It's possible no actual merging occured.
+                }
+                return new_wedges;
+            }
+
             var prod = new ProdNode();
+            foreach(var v in factors)
+                prod.AddChild(v.DeepClone());
 
-            bool factored = true;
-            foreach(var child in Children)
-            {
-                DNode dnode;
-                if (FactorProdNode(child, ref prod, out dnode))
-                {
-                    wedge.AddChild(dnode);
-                }
-                else
-                {
-                    factored = false;
-                    wedge.AddChild(child);
-                }
-            }
-
-            if (factored == true)
-            {
-                int sgn = wedge.SortDNodes();
-                if (sgn != 1)
-                    prod.AddChild(new ConstNode(sgn));
-            }
-
-            if (prod.ChildCount() > 0)
-            {
-                prod.AddChild(wedge);
-                prod.AssertValid();
-                return prod;
-            }
-            wedge.AssertValid();
-            return wedge;
+            prod.AddChild(new_wedges); // Know it's different: A wedge node became a prod node.
+            return prod;
         }
 
         public override SymNode Differentiate(string var)
         {
             throw new ApplicationException("Cannot differentiate a wedge product.");
         }
-
     }
 }

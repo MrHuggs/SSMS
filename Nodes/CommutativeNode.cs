@@ -41,14 +41,17 @@ namespace SSMS.Nodes
                     if (used[j])
                         continue;
 
-                    if (child.IsEqual(pnode.Children[i]))
+                    if (child.IsEqual(pnode.Children[j]))
+                    {
+                        used[j] = true;
                         break;
+                    }
                 }
             }
             return true;
         }
 
-
+        /*
         public CommutativeNode MergeChildrenUp()
         {
             // If we have any children that are the same type, move their nodes into us.
@@ -73,7 +76,7 @@ namespace SSMS.Nodes
             }
 
             return result;
-        }
+        }*/
 
         public class ChildSplit
         {

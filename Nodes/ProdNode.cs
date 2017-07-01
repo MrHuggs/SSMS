@@ -285,5 +285,18 @@ namespace SSMS.Nodes
             return result;
         }
 
+        public override void AssertValid()
+        {
+            base.AssertValid();
+            int cnt = 0;
+            foreach (var v in Children)
+            {
+                if (v.HasDifferential())
+                    cnt++;
+            }
+            // We cannot have powers of differentials.
+            Debug.Assert(cnt <= 1);
+        }
+
     }
 }

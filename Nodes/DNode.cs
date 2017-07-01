@@ -59,6 +59,9 @@ namespace SSMS.Nodes
             throw new ApplicationException("Cannot differentiate a differential.");
         }
 
+        public override bool HasDifferential() { return true; }
+
+
         public override void AssertValid()
         {
             base.AssertValid();

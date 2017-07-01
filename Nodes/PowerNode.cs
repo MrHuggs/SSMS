@@ -203,6 +203,9 @@ namespace SSMS.Nodes
             Debug.Assert(Exponent != null);
             Base.AssertValid();
             Exponent.AssertValid();
+
+            Debug.Assert(!Base.HasDifferential());
+            Debug.Assert(!Exponent.HasDifferential());
         }
 
     }
