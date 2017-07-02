@@ -31,6 +31,9 @@ namespace SSMS.Parser
 
             var result = CreateNodes(enodes);
 
+            // This will trigger an exception if there are non-linear differntials:
+            result.HasDifferential();
+
             result.AssertValid();
             result.CheckTree();
             return result;

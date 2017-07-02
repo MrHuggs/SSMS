@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace SSMS.Nodes
 {
-    public class WedgeNode : CommutativeNode
+    public class WedgeNode : ChildListNode
     {
         public WedgeNode()
         {

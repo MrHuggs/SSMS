@@ -298,5 +298,20 @@ namespace SSMS.Nodes
             Debug.Assert(cnt <= 1);
         }
 
+        public override bool HasDifferential()
+        {
+            int cnt = 0;
+            foreach (var v in Children)
+            {
+                if (v.HasDifferential())
+                    cnt++;
+            }
+
+            if (cnt > 1)
+                throw new ApplicationException(string.Format("Expression {0} has differntials that do not appear linearly.", ToString()));
+
+            return cnt > 0;
+        }
+
     }
 }

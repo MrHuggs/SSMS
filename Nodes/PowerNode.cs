@@ -208,5 +208,15 @@ namespace SSMS.Nodes
             Debug.Assert(!Exponent.HasDifferential());
         }
 
+        public override bool HasDifferential()
+        {
+            if (Base.HasDifferential())
+                throw new ApplicationException(string.Format("Power node {0} has differential in base expression.", ToString()));
+            if (Exponent.HasDifferential())
+                throw new ApplicationException(string.Format("Power node {0} has differential in exponent expression.", ToString()));
+
+            return false;
+        }
+
     }
 }

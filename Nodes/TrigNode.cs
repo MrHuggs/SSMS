@@ -41,6 +41,14 @@ namespace SSMS.Nodes
 
             Debug.Assert(!Angle.HasDifferential());
         }
-        
+
+        public override bool HasDifferential()
+        {
+            if (Angle.HasDifferential())
+                throw new ApplicationException(string.Format("Trig node {0} has differentials.", ToString()));
+
+            return false;
+        }
+
     }
 }

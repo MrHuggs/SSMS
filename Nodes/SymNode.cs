@@ -126,7 +126,8 @@ namespace SSMS.Nodes
         public abstract SymNode Differentiate(string var);
 
         // Does this node or any of its children have a differential (e.g. DNode) appearing as a linear term.
-        // Note that non-linear terms of differentials are not allowed.
+        // Note that non-linear terms of differentials are not allowed. This will thtough and exception if 
+        // such is found:
         public virtual bool HasDifferential() { return false; }
 
         // Check this node and its children for consistency:

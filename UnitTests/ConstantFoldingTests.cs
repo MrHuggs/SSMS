@@ -99,12 +99,16 @@ namespace UnitTests
         
             Tuple<string, string, string>[] tests =
             {
-                Tuple.Create(@"d_x/\(d_x+d_y)", @"d_x/\(d_x+d_y)", ""),       // Note that constants are formatted first
-                Tuple.Create(@"d_x/\4", @"4*d_x", ""),       // Note that constants are formatted first
-                Tuple.Create(@"d_x/\(4+a+sin(x))", @"(4+a+sin(x))*d_x", ""),       // Note that constants are formatted first
-                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*((d_x+d_y)/\d_x)", ""),       // Note that constants are formatted first
-                Tuple.Create(@"(d_x+d_z)/\(d_x+d_y)", @"(d_x+d_z)/\(d_x+d_y)", ""),       // Note that constants are formatted first
-            };
+                Tuple.Create(@"d_x/\(d_x+d_y)", @"d_x/\(d_x+d_y)", @"d_x/\d_y"),
+                Tuple.Create(@"(d_x+d_y)/\d_x", @"(d_x+d_y)/\d_x", @"-(d_x/\d_y)"),
+                Tuple.Create(@"(d_x+d_y)/\d_x/\(d_a+d_b)", @"(d_x+d_y)/\d_x/\(d_a+d_b)", @"-(d_a/\d_x/\d_y)-(d_b/\d_x/\d_y)"),
+                Tuple.Create(@"d_x/\4", @"4*d_x", ""),       
+                Tuple.Create(@"d_x/\(4+a+sin(x))", @"(4+a+sin(x))*d_x", ""),       
+                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*((d_x+d_y)/\d_x)", ""),  
+                Tuple.Create(@"(d_x+d_z)/\(d_x+d_y)", @"(d_x+d_z)/\(d_x+d_y)", ""),
+                Tuple.Create(@"(d_x+d_z)/\(d_x+(d_y/\d_q))", @"(d_x+d_z)/\(d_x-(d_q/\d_y))", ""),
+                Tuple.Create(@"(d_a/\d_z)/\(d_b/\((d_y/\d_c)/\d_q))", @"d_a/\d_b/\d_c/\d_q/\d_y/\d_z", ""),
+            };                                                                                                                        
 
             for (int i = tests.Length - 1; i >= 0; i--)
             {
@@ -118,7 +122,8 @@ namespace UnitTests
                 if (s.Item3 != "")
                 {
                     var ex = TransformsList.Inst().Expand(simple);
-                    Assert.AreEqual(s.Item3, ex.ToString());
+                    var ex_folded = ex.FoldConstants();
+                    Assert.AreEqual(s.Item3, ex_folded.ToString());
                 }
             }
 
@@ -414,7 +419,6 @@ namespace UnitTests
             en = en.Evaluate();
             Assert.AreEqual(NodeTypes.Constant, en.Type);  // Doesn't evaluate cause negative base.
             Assert.AreEqual("2.12442716630506E+16", en.ToString());
-
         }
     }
 }

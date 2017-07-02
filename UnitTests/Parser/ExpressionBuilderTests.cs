@@ -57,7 +57,11 @@ namespace UnitTests.Parser
                 "d_8",
                 "d_+",
                 "d_",
-                "d_d_"
+                "d_d_",
+                "d_x*d_y",
+                "sin(d_x)",
+                "d_x^2",
+                "2^d_x",
              };
 
 
