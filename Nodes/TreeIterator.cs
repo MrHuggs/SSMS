@@ -11,8 +11,7 @@ namespace SSMS.Nodes
         // Iterate the the nodes of SymNode tree in Depth First, post-order
         // https://en.wikipedia.org/wiki/Tree_traversal#Post-order
         //
-
-
+   
         public TreeIterator(SymNode root)
         {
             StackEntry entry = new StackEntry();

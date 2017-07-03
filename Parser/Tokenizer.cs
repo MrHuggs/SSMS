@@ -6,6 +6,8 @@ using System.Diagnostics;
 
 namespace SSMS.Parser
 {
+    // Basic tokenizer for processing expression strings.
+    //
     public enum TokenTypes
     {
         Plus,
@@ -101,6 +103,7 @@ namespace SSMS.Parser
     
     public class Tokenizer
     {
+        // This is list of function names, which will not be returned as variables (e.g. cos, sin)
         public HashSet<String> Functions;
 
         public Tokenizer(string buffer, HashSet<String> functions = null)

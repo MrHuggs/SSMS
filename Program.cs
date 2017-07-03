@@ -13,6 +13,15 @@ namespace SSMS
 {
     class Program
     {
+        static string BreakString(SymNode node)
+        {
+            string s = "\t" + node.ToStringSorted();
+            s = s.Replace("+", "\n\t+");
+            s = s.Replace("-", "\n\t-");
+            return s;
+        }
+
+        // The goal is to calculation the expresion on page 375 of Lee Smooth Manifolds:
         static void Main(string[] args)
         {
             var x = SymNodeBuilder.ParseString("r*sin(phi)*cos(theta)");
@@ -24,107 +33,36 @@ namespace SSMS
             var dz = Differential.Compute(z);
 
             var dx_dy = new WedgeNode(dx, dy);
-
             var dx_dy_e = TransformsList.Inst().TryExpand(dx_dy);
-            var dx_dy_c = TransformsList.Inst().TrySimplify(dx_dy_e);
-            //var dx_dy_e_e = TransformsList.Inst().TryExpand(dx_dy_c);
-            dx_dy_c.Sort();
+            var dx_dy_c = TransformsList.Inst().Simplify(dx_dy_e);
 
-            var s = dx_dy_c.ToString();
-            var sp = s.Replace("+", "\n+");
-
-            Cos2Sin2Transform.Transform(dx_dy_c);
-            Cos2Sin2Transform.Transform(dx_dy_c);
-
-            Console.WriteLine(@"dx/\dy = " + dx_dy_c.ToStringSorted());
-            
+            Console.WriteLine(@"dx/\dy = ");
+            Console.WriteLine(BreakString(dx_dy_c));
 
 
+            var dx_dz = new WedgeNode(dx, dz);
+            var dx_dz_e = TransformsList.Inst().TryExpand(dx_dz);
+            var dx_dz_c = TransformsList.Inst().Simplify(dx_dz_e);
 
+            Console.WriteLine(@"dx/\dz = ");
+            Console.WriteLine(BreakString(dx_dz_c));
 
+            var dy_dz = new WedgeNode(dy, dz);
+            var dy_dz_e = TransformsList.Inst().TryExpand(dy_dz);
+            var dy_dz_c = TransformsList.Inst().Simplify(dy_dz_e);
 
-        }
+            Console.WriteLine(@"dy/\dz = ");
+            Console.WriteLine(BreakString(dy_dz_c));
 
-
-
-
-        static public void Cos2TransfromTest()
-        {
-            SymNode cos2, sin2;
-            ProdNode cp, sp;
-            PlusNode p;
-
-            cos2 = new PowerNode(new CosNode(new VarNode("t")), new ConstNode(2));
-            sin2 = new PowerNode(new SinNode(new VarNode("y")), new ConstNode(2));
-            p = new PlusNode();
-            p.AddChild(cos2);
-            p.AddChild(sin2);
-            p.Print();
-            Debug.Assert(!Cos2Sin2Transform.Transform(p));
-
-            cos2 = new PowerNode(new CosNode(new VarNode("t")), new ConstNode(2));
-            sin2 = new PowerNode(new SinNode(new VarNode("t")), new ConstNode(2));
-            p = new PlusNode();
-            p.AddChild(cos2);
-            p.AddChild(sin2);
-            p.Print();
-            Debug.Assert(Cos2Sin2Transform.Transform(p));
-            p.Print();
-
-
-            cos2 = new PowerNode(new CosNode(new VarNode("t")), new ConstNode(2));
-            sin2 = new PowerNode(new SinNode(new VarNode("t")), new ConstNode(2));
-
-            cp = new ProdNode();
-            sp = new ProdNode();
-
-            cp.AddChild(new ConstNode(4));
-            sp.AddChild(new ConstNode(4));
-
-            cp.AddChild(cos2);
-            sp.AddChild(sin2);
-
-            p = new PlusNode();
-            p.AddChild(cp);
-            p.AddChild(sp);
-            p.Print();
-            Debug.Assert(Cos2Sin2Transform.Transform(p));
-            p.Print();
-        }
-
-        static public void ProdNodeTest()
-        {
-            var n = new ProdNode();
-
-            n.AddChild(new VarNode("b"));
-            n.AddChild(new VarNode("a"));
-            n.AddChild(new VarNode("d"));
-            n.AddChild(new VarNode("c"));
-
-            n.Print();
-
-            //Debug.Assert(s == "a b c d");
-
-            n.AddChild(new ConstNode(24));
-            n.AddChild(new ConstNode(-3));
-            n.AddChild(new VarNode("ab"));
-
-            n.Print();
-
-            var p = new PlusNode();
-            p.AddChild(new VarNode("b"));
-            p.AddChild(new VarNode("z"));
-
-
-            var power_node = new PowerNode(
-                                    new CosNode(new VarNode("t")),
-                                    new ConstNode(2)
-                                    );
-
-            n.AddChild(power_node);
-
-            n.Print();
-
+            var w = new PlusNode(
+                        new ProdNode(x, dy_dz_c),
+                        new ProdNode(y, new ConstNode(-1), dx_dz_c),
+                        new ProdNode(z, dx_dy_c)
+                        );
+            var w_e = TransformsList.Inst().TryExpand(w);
+            var w_c = TransformsList.Inst().Simplify(w_e);
+            Console.WriteLine(@"w = ");
+            Console.WriteLine(BreakString(w_c));
         }
     }
 }

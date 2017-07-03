@@ -6,6 +6,8 @@ using SSMS.Nodes;
 
 namespace SSMS.Parser
 {
+    // Simple parser for creating expression trees from token lists.
+
     public class ExpNode 
     {
         public string String;

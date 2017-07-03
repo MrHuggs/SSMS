@@ -35,6 +35,7 @@ namespace SSMS
         {
                 new ConstFoldTransform(),
                 new MergeTransform(),
+                new Cos2Sin2Transform(),
                 new DistributiveTransform(),
         };
 
