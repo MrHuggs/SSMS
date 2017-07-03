@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using SSMS;
 using SSMS.Nodes;
+using SSMS.Parser;
 
 namespace UnitTests
 {
@@ -86,6 +87,24 @@ namespace UnitTests
 
             plus.AddChild(new ProdNode(a, c, cs.DeepClone()));
             Assert.AreEqual("a*c*cos(g^h)+a*d*e*cos(g^h)+b*c*cos(g^h)", plus.ToStringSorted());
+        }
+
+        [TestCase]
+        public void DegenerateSortTest()
+        {
+            // Tests sorting where we have to compare inside a special function:
+            var node = SymNodeBuilder.ParseString("cos(b)+cos(a)");
+            Assert.AreEqual("cos(b)+cos(a)", node.ToString());
+            Assert.AreEqual("cos(a)+cos(b)", node.ToStringSorted());
+
+            node = SymNodeBuilder.ParseString("b^c*(4+e)+(4+e)*a^c");
+            Assert.AreEqual("b^c*(4+e)+(4+e)*a^c", node.ToString());
+            Assert.AreEqual("a^c*(4+e)+b^c*(4+e)", node.ToStringSorted());
+
+            node = SymNodeBuilder.ParseString("b^c*(4+e)+(4+e)*a^c+a");
+            Assert.AreEqual("b^c*(4+e)+(4+e)*a^c+a", node.ToString());
+            Assert.AreEqual("a+a^c*(4+e)+b^c*(4+e)", node.ToStringSorted());
+
         }
 
         [TestCase]

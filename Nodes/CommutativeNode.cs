@@ -14,7 +14,7 @@ namespace SSMS.Nodes
         public override void Sort()
         {
             Children.ForEach(node => node.Sort());
-            Children.Sort((a, b) => SymNode.CompareNodes(a, b));
+            Children.Sort((a, b) => SymNodeCompare.CompareNodes(a, b));
         }
 
         public override bool IsEqual(SymNode other)

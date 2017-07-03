@@ -63,6 +63,12 @@ namespace UnitTests
             enode = new PowerNode(c10, c0);
             folded = enode.FoldConstants();
             Assert.AreEqual("1", folded.ToString());
+
+
+            var wtn = SymNodeBuilder.ParseString(@"r*cos(phi)*cos(theta)*sin(phi)*sin(theta)*(d_phi/\d_r)-sin(phi)*cos(theta)*r*cos(phi)*sin(theta)*(d_phi/\d_r)");
+            var wtn_s = TransformsList.Inst().TrySimplify(wtn);
+            Assert.AreEqual(wtn_s.IsZero(), true);
+
         }
 
 
@@ -76,12 +82,12 @@ namespace UnitTests
             var x = SymNodeBuilder.ParseString(@"d_y/\d_x");
             Assert.AreEqual(x.Merge(), null);
             var xfc = x.FoldConstants();
-            Assert.AreEqual(@"-(d_x/\d_y)", xfc.ToString());
+            Assert.AreEqual(@"-d_x/\d_y", xfc.ToString());
 
             var w = SymNodeBuilder.ParseString(@"d_y/\d_x/\d_z");
             var merged = w.Merge();
             var folded = merged.FoldConstants();
-            Assert.AreEqual(@"-(d_x/\d_y/\d_z)", folded.ToString());
+            Assert.AreEqual(@"-d_x/\d_y/\d_z", folded.ToString());
 
             var x_wedge_w = new WedgeNode(x, w);
             Assert.AreEqual(@"(d_y/\d_x)/\((d_y/\d_x)/\d_z)", x_wedge_w.ToString());
@@ -100,14 +106,15 @@ namespace UnitTests
             Tuple<string, string, string>[] tests =
             {
                 Tuple.Create(@"d_x/\(d_x+d_y)", @"d_x/\(d_x+d_y)", @"d_x/\d_y"),
-                Tuple.Create(@"(d_x+d_y)/\d_x", @"(d_x+d_y)/\d_x", @"-(d_x/\d_y)"),
-                Tuple.Create(@"(d_x+d_y)/\d_x/\(d_a+d_b)", @"(d_x+d_y)/\d_x/\(d_a+d_b)", @"-(d_a/\d_x/\d_y)-(d_b/\d_x/\d_y)"),
+                Tuple.Create(@"(d_x+d_y)/\d_x", @"(d_x+d_y)/\d_x", @"-d_x/\d_y"),
+                Tuple.Create(@"(d_x+d_y)/\d_x/\(d_a+d_b)", @"(d_x+d_y)/\d_x/\(d_a+d_b)", @"-d_a/\d_x/\d_y-d_b/\d_x/\d_y"),
                 Tuple.Create(@"d_x/\4", @"4*d_x", ""),       
                 Tuple.Create(@"d_x/\(4+a+sin(x))", @"(4+a+sin(x))*d_x", ""),       
-                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*((d_x+d_y)/\d_x)", ""),  
+                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*(d_x+d_y)/\d_x", ""),  
                 Tuple.Create(@"(d_x+d_z)/\(d_x+d_y)", @"(d_x+d_z)/\(d_x+d_y)", ""),
-                Tuple.Create(@"(d_x+d_z)/\(d_x+(d_y/\d_q))", @"(d_x+d_z)/\(d_x-(d_q/\d_y))", ""),
+                Tuple.Create(@"(d_x+d_z)/\(d_x+(d_y/\d_q))", @"(d_x+d_z)/\(d_x-d_q/\d_y)", ""),
                 Tuple.Create(@"(d_a/\d_z)/\(d_b/\((d_y/\d_c)/\d_q))", @"d_a/\d_b/\d_c/\d_q/\d_y/\d_z", ""),
+                Tuple.Create(@"r*cos(phi)*cos(theta)*d_phi/\r*cos(phi)*sin(theta)*d_phi", "0", ""),
             };                                                                                                                        
 
             for (int i = tests.Length - 1; i >= 0; i--)

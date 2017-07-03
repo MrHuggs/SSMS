@@ -191,9 +191,7 @@ namespace SSMS.Nodes
             }
             // An exponent that is not a constant is not currently supported. We'll need a log node type, which we don't
             // currently have.
-
-            Debug.Assert(false);
-            return null;
+            throw new ApplicationException(string.Format("Cannot differentiate power node {0} because it has a non-constant exponent.", ToString()));
         }
 
         public override void AssertValid()

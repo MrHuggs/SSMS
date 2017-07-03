@@ -15,13 +15,37 @@ namespace SSMS
     {
         static void Main(string[] args)
         {
-            var w = SymNodeBuilder.ParseString(@"-(d_x/\d_y)/\-(d_x/\d_y)/\d_z");
+            var x = SymNodeBuilder.ParseString("r*sin(phi)*cos(theta)");
+            var y = SymNodeBuilder.ParseString("r*sin(phi)*sin(theta)");
+            var z = SymNodeBuilder.ParseString("r*cos(phi)");
+
+            var dx = Differential.Compute(x);
+            var dy = Differential.Compute(y);
+            var dz = Differential.Compute(z);
+
+            var dx_dy = new WedgeNode(dx, dy);
+
+            var dx_dy_e = TransformsList.Inst().TryExpand(dx_dy);
+            var dx_dy_c = TransformsList.Inst().TrySimplify(dx_dy_e);
+            //var dx_dy_e_e = TransformsList.Inst().TryExpand(dx_dy_c);
+            dx_dy_c.Sort();
+
+            var s = dx_dy_c.ToString();
+            var sp = s.Replace("+", "\n+");
+
+            Cos2Sin2Transform.Transform(dx_dy_c);
+            Cos2Sin2Transform.Transform(dx_dy_c);
+
+            Console.WriteLine(@"dx/\dy = " + dx_dy_c.ToStringSorted());
             
-            var x_wedge_w_simple = TransformsList.Inst().Simplify(w);
-            Debug.Assert(x_wedge_w_simple.IsZero());
+
+
+
+
+
         }
 
-    
+
 
 
         static public void Cos2TransfromTest()

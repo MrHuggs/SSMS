@@ -168,54 +168,6 @@ namespace SSMS.Nodes
         }
 
 
-
-        // Comparison function used where we are ordering nodes with Sort():
-        static public int CompareNodes(SymNode a, SymNode b)
-        {
-            var ca = new CompIterator(a);
-            var cb = new CompIterator(b);
-
-            while (true)
-            {
-                bool an = ca.Next();
-                bool bn = cb.Next();
-
-                if (an == false)
-                {
-                    if (bn == false)
-                        return 0;
-                    return -1;
-                }
-                if (bn == false)
-                    return 1;
-
-                int del = ca.Cur.Type - cb.Cur.Type;
-                if (del != 0)
-                    return del;
-
-                switch(ca.Cur.Type)
-                {
-                    case NodeTypes.Constant:
-                        double ddel = ((ConstNode)ca.Cur).Value - ((ConstNode)cb.Cur).Value;
-                        if (ddel < 0)
-                            return -1;
-                        if (ddel > 0)
-                            return 1;
-                        break; //  ddel == 0
-                    case NodeTypes.Var:
-                        int sdel = ((VarNode)ca.Cur).Var.CompareTo(((VarNode)cb.Cur).Var);
-                        if (sdel != 0)
-                            return sdel;
-                        // else strings are equal.
-                        break;
-                    default:
-                        Debug.Assert(false);
-                        break;
-                }
-                // Continue searching.
-            }
-
-        }
     }
 
 

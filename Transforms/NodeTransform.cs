@@ -70,6 +70,11 @@ namespace SSMS
         {
             return ModifyTree(start_node, Exapnders);
         }
+        public SymNode TryExpand(SymNode start_node)
+        {
+            var result = ModifyTree(start_node, Exapnders);
+            return (result != null) ? result : start_node;
+        }
 
         SymNode ModifyTree(SymNode start_node, NodeTransform[] transforms)
         {
@@ -116,7 +121,7 @@ namespace SSMS
                     }
                     else
                     {
-                        Debug.WriteLine(string.Format("Transform {0} did not simplify {1}.", t.GetType().Name, new_version));
+                        //Debug.WriteLine(string.Format("Transform {0} did not modify {1}.", t.GetType().Name, new_version));
                     }
                 }
             } while (transformed == true);
@@ -168,7 +173,7 @@ namespace SSMS
                     }
                     else
                     {
-                        Debug.WriteLine(string.Format("Non-recursive transform {0} did not simplify {1}.", t.GetType().Name, child));
+                        //Debug.WriteLine(string.Format("Non-recursive transform {0} did not modify {1}.", t.GetType().Name, child));
                     }
                 }
             }

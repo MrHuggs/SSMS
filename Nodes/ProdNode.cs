@@ -33,12 +33,15 @@ namespace SSMS.Nodes
 
         public override void Format(FormatBuilder fb)
         {
-            // The sort process puts constants behind variables. However, we normally write the constant term
+            // The sort process puts constants behind variables. We want this, because a*2 comes before b*1.5.
+            //
+            // However, we normally write the constant term
             // in front of variables. Handle this by writing our our children in two passes. First write
             // out constants, then other children.
             //
-            // This we get 10*a instead of a*10
+            // Thus we get 10*a instead of a*10
             //
+            // Similarly, we do the same thing for differentials - they are put last.
             int cnt = 0;
             foreach(var node in Children)
             {
@@ -51,7 +54,7 @@ namespace SSMS.Nodes
 
             foreach (var node in Children)
             {
-                if (node.Type == NodeTypes.Constant)
+                if (node.Type == NodeTypes.Constant || node.Type == NodeTypes.Differential || node.Type == NodeTypes.Wedge)
                     continue;
 
                 if (cnt++ > 0)
@@ -67,7 +70,16 @@ namespace SSMS.Nodes
                 }
                 else need_paren = false;
                 fb.Append(node.ToString(), need_paren);
-            }       
+            }
+
+            foreach (var node in Children)
+            {
+                if (node.Type != NodeTypes.Differential && node.Type != NodeTypes.Wedge)
+                    continue;
+                if (cnt++ > 0)
+                    fb.Append('*');
+                fb.Append(node.ToString());
+            }
         }
 
 
