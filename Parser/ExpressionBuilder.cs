@@ -6,6 +6,8 @@ using SSMS.Nodes;
 
 namespace SSMS.Parser
 {
+    // Simple parser for creating expression trees from token lists.
+
     public class ExpNode 
     {
         public string String;
@@ -106,6 +108,20 @@ namespace SSMS.Parser
 
                 if (next.Type == TokenTypes.End)
                     break;
+
+                if (next.Type == TokenTypes.Differential)
+                {
+                    next = PeekNext();
+                    if (next.Type != TokenTypes.String)
+                        Throw("Differential must be followed by varialbe name");
+                    Advance();
+
+                    var nn = new ExpNode();
+                    nn.String = next.StringValue;
+                    nn.Type = TokenTypes.Differential;
+                    Output.Add(nn);
+                    continue;
+                }
 
                 if (next.Type == TokenTypes.Number)
                 {
@@ -265,22 +281,26 @@ namespace SSMS.Parser
             }
         }
 
+        // Operator precedence table. This is not exactly the same as SymNode NodeTypes.
         static readonly int[] PrecedenceTable =
         {
                 1, //Plus
                 1, //Minus
-                2, //Times
-                2, //Div
-                3, //Exp
+                2, //Wedge
+                3, //Times
+                3, //Div
+                4, //Exp
                 0, // Comma
                 -1,//LParen 
                 -1,//RParen - should never be used
-                4, //UnaryPlus
-                4, //UnaryMinus
+                6, //Differential
+                5, //UnaryPlus
+                5, //UnaryMinus
             };
 
         static int Precendece(TokenTypes type)
         {
+            Debug.Assert(PrecedenceTable.Length == (int) TokenTypes.UnaryMinus + 1);
             return PrecedenceTable[(int)type];
         }
         static bool IsLeftAssoc(TokenTypes type)

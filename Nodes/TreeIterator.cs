@@ -11,8 +11,7 @@ namespace SSMS.Nodes
         // Iterate the the nodes of SymNode tree in Depth First, post-order
         // https://en.wikipedia.org/wiki/Tree_traversal#Post-order
         //
-
-
+   
         public TreeIterator(SymNode root)
         {
             StackEntry entry = new StackEntry();
@@ -137,39 +136,4 @@ namespace SSMS.Nodes
         }
     }
 
-    public class CompIterator
-    {
-        TreeIteratorPre TreeIter;
-        public CompIterator(SymNode start)
-        {
-            TreeIter = new TreeIteratorPre(start);
-        }
-
-        public SymNode Cur
-        {
-            get
-            {
-                return TreeIter.Cur;
-            }
-            //private set;
-        }
-
-        public bool Next()
-        {
-            while (TreeIter.Next())
-            {
-                NodeTypes type = TreeIter.Cur.Type;
-                if (type.IsFunction())
-                {
-                    return true;
-                }
-
-                if (type == NodeTypes.Var)
-                    return true;
-                if (type == NodeTypes.Constant)
-                return true;
-            }
-            return false;
-        }
-    }
 }

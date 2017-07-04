@@ -35,6 +35,7 @@ namespace SSMS
         {
                 new ConstFoldTransform(),
                 new MergeTransform(),
+                new Cos2Sin2Transform(),
                 new DistributiveTransform(),
         };
 
@@ -70,6 +71,11 @@ namespace SSMS
         {
             return ModifyTree(start_node, Exapnders);
         }
+        public SymNode TryExpand(SymNode start_node)
+        {
+            var result = ModifyTree(start_node, Exapnders);
+            return (result != null) ? result : start_node;
+        }
 
         SymNode ModifyTree(SymNode start_node, NodeTransform[] transforms)
         {
@@ -83,13 +89,14 @@ namespace SSMS
                 foreach (var t in transforms)
                 {
                     SymNode updated;
+                    var new_version_copy = new_version.DeepClone();
                     if (t.Attributes.Contains(TransformAttributes.Recursive))
                     {
                         updated = t.Apply(new_version);
 
                         if (updated != null)
                         {
-                            Debug.WriteLine("Recursively transformed:");
+                            Debug.WriteLine(string.Format("Applied recursive transform {0}:", t.GetType().Name));
                             Debug.WriteLine(new_version.ToString());
                             Debug.WriteLine(updated.ToString());
                         }
@@ -102,10 +109,20 @@ namespace SSMS
                     if (updated != null)
                     {
                         updated.AssertValid();
+                        updated.CheckDisjoint(new_version);
+
+                        if (new_version_copy.IsEqual(updated))
+                        {
+                            Debug.Assert(false);
+                        }
                         new_version = updated;
                         change_count++;
                         transformed = true;
                         break;
+                    }
+                    else
+                    {
+                        //Debug.WriteLine(string.Format("Transform {0} did not modify {1}.", t.GetType().Name, new_version));
                     }
                 }
             } while (transformed == true);
@@ -134,18 +151,30 @@ namespace SSMS
                 for (int i = 0; i < node.ChildCount(); i++)
                 {
                     var child = node.GetChild(i);
+
+                    var temp = child.DeepClone();
+
                     var new_child = t.Apply(child);
+
+                    // The transform should not affect the source node:
+                    Debug.Assert(temp.IsEqual(child));
 
                     if (new_child != null)
                     {
                         new_child.AssertValid();
+                        new_child.CheckDisjoint(child);
+                        Debug.Assert(!new_child.IsEqual(child));
 
-                        Debug.WriteLine("Transformed:");
+                        Debug.WriteLine(string.Format("Applied non-recursive transform {0}:", t.GetType().Name));
                         Debug.WriteLine(child.ToString());
                         Debug.WriteLine(new_child.ToString());
 
                         node.ReplaceChild(child, new_child);
                         return temp_parent.GetChild(0);
+                    }
+                    else
+                    {
+                        //Debug.WriteLine(string.Format("Non-recursive transform {0} did not modify {1}.", t.GetType().Name, child));
                     }
                 }
             }

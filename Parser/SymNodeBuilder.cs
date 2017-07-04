@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
 using SSMS.Nodes;
 
 
 namespace SSMS.Parser
 {
+    // Converts an expression tree into sym nodes.
     public class SymNodeBuilder
     {
 
@@ -31,7 +31,11 @@ namespace SSMS.Parser
 
             var result = CreateNodes(enodes);
 
+            // This will trigger an exception if there are non-linear differntials:
+            result.HasDifferential();
+
             result.AssertValid();
+            result.CheckTree();
             return result;
         }
 
@@ -71,6 +75,9 @@ namespace SSMS.Parser
                     node = new PlusNode(children[0],
                                         new ProdNode(new ConstNode(-1), children[1]));
                     break;
+                case TokenTypes.Wedge:
+                    node = new WedgeNode(children[0], children[1]);
+                    break;
                 case TokenTypes.Times:
                     node = new ProdNode(children[0], children[1]);
                     break;
@@ -83,6 +90,9 @@ namespace SSMS.Parser
                     break;
                 case TokenTypes.Comma:
                     node = children[0];
+                    break;
+                case TokenTypes.Differential:
+                    node = new DNode(enode.String);
                     break;
                 case TokenTypes.UnaryPlus:
                     node = children[0];

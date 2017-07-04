@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace SSMS.Nodes
@@ -38,7 +37,17 @@ namespace SSMS.Nodes
             base.AssertValid();
             Debug.Assert(Angle != null);
             Angle.AssertValid();
+
+            Debug.Assert(!Angle.HasDifferential());
         }
-        
+
+        public override bool HasDifferential()
+        {
+            if (Angle.HasDifferential())
+                throw new ApplicationException(string.Format("Trig node {0} has differentials.", ToString()));
+
+            return false;
+        }
+
     }
 }

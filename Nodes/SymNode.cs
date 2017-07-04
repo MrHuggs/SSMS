@@ -9,11 +9,11 @@ namespace SSMS.Nodes
     // List of all possible node types. Note that there are some intermediate helper subclasses
     // of SymNode that are not included.
     //
-    // They are ordered by operator precedence.
-    // The order is also used for displaying terms, with some small modificaitons.
+    // They are ordered approximately by operator precedence.
     //
-    // The convenetion will be to examine nodes by getthing their Type, instead of using
-    // the C# type systme. I.e: if (node.Type == NodeTypes.Var) instead of node as Type
+    // The convention will be to examine nodes by getthing their Type, instead of using
+    // the C# type system. I.e: if (node.Type == NodeTypes.Var) instead of node as Type
+    //
     public enum NodeTypes
     {
         Var,
@@ -23,8 +23,8 @@ namespace SSMS.Nodes
         Sin,
         Tan,
         Power,
-        Div,
         Prod,
+        Wedge,
         Plus,
     };
     
@@ -40,15 +40,16 @@ namespace SSMS.Nodes
             set { _Type = value; }
         }
 
-        // Nodes can have children, and these method provide a way to traverse them.
-        // The order of the children should not matter. Although a lexical order is used
-        // for printing, the children could appear in any order.
+        // Nodes can have children, and these methods provide a way to traverse them.
+        // The order of the children does matter for some node types (e.g. wedge product)
+        // A seperate a lexical order is used for printing.
+        // The nodes should form a tree, so a child should never appear twice.
         //
-        // The nodes should form a tree, so a child should never be added twice.
         public virtual int ChildCount() { return 0; }
         public virtual SymNode GetChild(int index) { Debug.Assert(false); return null; }
+
         // Replace one node with another. If the replacement is null, the original is simply
-        // removed. If you replace a node with another, it may get sorted to a different spot:
+        // removed.
         public virtual void ReplaceChild(SymNode existing_child, SymNode new_child) { Debug.Assert(false); }
         public bool HasChild(SymNode node)
         {
@@ -61,16 +62,16 @@ namespace SSMS.Nodes
         // as other and its children.
         public abstract bool IsEqual(SymNode other);
 
-        // Reorder and node that can be reorded without affecting the mean of the expression.
-        // The function should recursively call is children sort itself after:
+        // Reorder any nodes that can be reorded without affecting the meaning of the expression.
+        // The function should recursively call its children and sort itself after:
         public virtual void Sort()
         {
             for (int i = 0; i < ChildCount(); i++)
                 GetChild(i).Sort();
         }  
 
+        // Create a recursive copy. The order of nodes must be preserved, even if the order doesn't matter:
         public abstract SymNode DeepClone();
-
 
         // Convert to a string without sorting:
         public override string ToString()
@@ -103,78 +104,68 @@ namespace SSMS.Nodes
         public virtual bool IsZero() { return false; }
         public virtual bool IsOne() { return false; }
 
-        // Return a node representing this node if constant folding is allows. This means
-        // addition, multiplication, and division are allowed.
+        // Return a new node representing this node if constant folding is allowed. This means
+        // addition, multiplication, and division are allowed. For non-commuative nodes (e.g wedge),
+        // this could also mean rordering into a standard order.
+        // Acts recursively.
         public abstract SymNode FoldConstants();
 
-        // Return a node repesenting this node (and it's children) if numerial calculation is performed.
-        // So, for example, a cos node with a constant argument of .1 would return a constant node
+        // Return a node repesenting this node (and its children) if numerial calculation is allowed.
+        // For example, a cos node with a constant argument of .1 would return a constant node
         // of value 0.99999847691328769880290124792571.
         // If nummerical errors would occur (for example, divide by 0), the arguments are left alone.
+        // Acts recursively.
         public abstract SymNode Evaluate();
-
 
         // Merge children together, or possibly into this node, and return a new node (with new children)
         // if any merging was done. Note that the type of node may change.
         // This is best done after constants have been folded.
+        // Does NOT act recursively.
         public virtual SymNode Merge() { return null; }
 
+        // Perform differntiation WRT to the supplied variable:
         public abstract SymNode Differentiate(string var);
+
+        // Does this node or any of its children have a differential (e.g. DNode) appearing as a linear term?
+        // Note that non-linear combinations of differentials are not allowed. This will through an exception if 
+        // such is found:
+        public virtual bool HasDifferential() { return false; }
 
         // Check this node and its children for consistency:
         [Conditional("DEBUG")]
-        public virtual void AssertValid()
+        public virtual void AssertValid()  { }
+
+        // Make sure this tree doesn't have any doubly linked nodes:
+        [Conditional("DEBUG")]
+        public void CheckTree()
         {
+            var ti = new TreeIterator(this);
+            var hs = new HashSet<SymNode>();
+            while (ti.Next())
+            {
+                Debug.Assert(!hs.Contains(ti.Cur));
+                hs.Add(ti.Cur);
+            }
         }
 
-        // Comparison function used where we are ordering nodes with Sort():
-        static public int CompareNodes(SymNode a, SymNode b)
+        // Make sure nodes aren't linked to two different trees:
+        [Conditional("DEBUG")]
+        public void CheckDisjoint(SymNode other)
         {
-            var ca = new CompIterator(a);
-            var cb = new CompIterator(b);
-
-            while (true)
+            var ti = new TreeIterator(this);
+            var hs = new HashSet<SymNode>();
+            while (ti.Next())
             {
-                bool an = ca.Next();
-                bool bn = cb.Next();
-
-                if (an == false)
-                {
-                    if (bn == false)
-                        return 0;
-                    return -1;
-                }
-                if (bn == false)
-                    return 1;
-
-                int del = ca.Cur.Type - cb.Cur.Type;
-                if (del != 0)
-                    return del;
-
-                switch(ca.Cur.Type)
-                {
-                    case NodeTypes.Constant:
-                        double ddel = ((ConstNode)ca.Cur).Value - ((ConstNode)cb.Cur).Value;
-                        if (ddel < 0)
-                            return -1;
-                        if (ddel > 0)
-                            return 1;
-                        break; //  ddel == 0
-                    case NodeTypes.Var:
-                        int sdel = ((VarNode)ca.Cur).Var.CompareTo(((VarNode)cb.Cur).Var);
-                        if (sdel != 0)
-                            return sdel;
-                        // else strings are equal.
-                        break;
-                    default:
-                        Debug.Assert(false);
-                        break;
-                }
-                // Continue searching.
+                Debug.Assert(!hs.Contains(ti.Cur));
+                hs.Add(ti.Cur);
             }
-
+            ti = new TreeIterator(other);
+            hs = new HashSet<SymNode>();
+            while (ti.Next())
+            {
+                Debug.Assert(!hs.Contains(ti.Cur));
+                hs.Add(ti.Cur);
+            }
         }
     }
-
-
 }

@@ -27,10 +27,14 @@ namespace UnitTests.Parser
                 Tuple.Create("cos(f) + 3", "3+cos(f)"),
                 Tuple.Create("sin(cos(4*f) + 3 - cos(4*x)/23)","sin(3+cos(4*f)-(cos(4*x)*23^-1))"),
                 Tuple.Create("sin(x)^2 + cos(x)^2 / (x + y + x)", "sin(x)^2+cos(x)^2*(x+y+x)^-1"),
+
+                Tuple.Create(@"d_a/\d_b", @"d_a/\d_b"),
+                Tuple.Create(@"c*d*d_a/\(x+y)*d_b", @"(c*d)*d_a/\(x+y)*d_b"),
             };
 
-            foreach (var s in tests)
+            for (int i = tests.Length - 1; i >= 0; i--)
             {
+                var s = tests[i];
                 var node = SymNodeBuilder.ParseString(s.Item1);
 
                 Assert.AreEqual(s.Item2, node.ToString());
@@ -50,6 +54,14 @@ namespace UnitTests.Parser
                 "f**3",
                 "x*(4+f",
                 "x*4+f)",
+                "d_8",
+                "d_+",
+                "d_",
+                "d_d_",
+                "d_x*d_y",
+                "sin(d_x)",
+                "d_x^2",
+                "2^d_x",
              };
 
 

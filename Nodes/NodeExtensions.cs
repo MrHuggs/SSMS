@@ -6,7 +6,7 @@ namespace SSMS.Nodes
 {
     static class NodeExtensions
     {
-        public static bool IsEqual(this List<SymNode> value, List<SymNode> other)
+        public static bool IsEqualNoReorder(this List<SymNode> value, List<SymNode> other)
         {
             if (value.Count != other.Count)
                 return false;
@@ -17,6 +17,33 @@ namespace SSMS.Nodes
                     return false;
             }
             return true;
+        }
+        public static bool IsEqualReorder(this List<SymNode> value, List<SymNode> other)
+        {
+            if (value.Count != other.Count)
+                return false;
+
+            bool[] used = new bool[value.Count];
+
+            for (int i = 0; ; i++)
+            {
+                if (i == value.Count)
+                    return true;
+
+                for (int j = 0; ; j++)
+                {
+                    if (j == value.Count)
+                        return false;
+
+                    if (used[j])
+                        continue;
+                    if (value[i].IsEqual(other[j]))
+                    {
+                        used[j] = true;
+                        break;
+                    }
+                }
+            }
         }
 
         public static List<SymNode> ShallowCopy(this List<SymNode> value)

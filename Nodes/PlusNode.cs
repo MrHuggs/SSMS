@@ -153,7 +153,7 @@ namespace SSMS.Nodes
 
             public bool AttemptMerge(MergePair other)
             {
-                if (!Nodes.IsEqual(other.Nodes))
+                if (!Nodes.IsEqualReorder(other.Nodes))
                     return false;
 
                 Sum += other.Sum;
@@ -266,6 +266,7 @@ namespace SSMS.Nodes
 
             return new_plus;
         }
+
 
     }
 

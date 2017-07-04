@@ -14,10 +14,44 @@ namespace SSMS.Nodes
         public override void Sort()
         {
             Children.ForEach(node => node.Sort());
-            Children.Sort((a, b) => SymNode.CompareNodes(a, b));
+            Children.Sort((a, b) => SymNodeCompare.CompareNodes(a, b));
         }
 
+        public override bool IsEqual(SymNode other)
+        {
+            if (other.Type != Type)
+                return false;
 
+            CommutativeNode pnode = (CommutativeNode)other;
+            var ocount = pnode.Children.Count;
+
+            if (ocount != Children.Count)
+                return false;
+
+            // The other list might be in a different order.
+            bool[] used = new bool[ocount];
+
+            for (int i = 0; i < ocount; i++)
+            {
+                SymNode child = Children[i];
+                for (int j = 0; ; j++)
+                {
+                    if (j == ocount)
+                        return false;   // failed to find a match.
+                    if (used[j])
+                        continue;
+
+                    if (child.IsEqual(pnode.Children[j]))
+                    {
+                        used[j] = true;
+                        break;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /*
         public CommutativeNode MergeChildrenUp()
         {
             // If we have any children that are the same type, move their nodes into us.
@@ -42,7 +76,7 @@ namespace SSMS.Nodes
             }
 
             return result;
-        }
+        }*/
 
         public class ChildSplit
         {

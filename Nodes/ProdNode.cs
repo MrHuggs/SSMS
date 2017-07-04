@@ -19,7 +19,7 @@ namespace SSMS.Nodes
                 AddChild(node);
         }
 
-        // Helper: Given a list of nodes, clone the nodes and crate a product node for their
+        // Helper: Given a list of nodes, clone the nodes and create a product node for their
         // product, unless there is just one node, in which case just return the one.
         public static SymNode FromProdList<T> (List<T> list) where T : SymNode
         {
@@ -33,12 +33,15 @@ namespace SSMS.Nodes
 
         public override void Format(FormatBuilder fb)
         {
-            // The sort process puts constants behind variables. However, we normally write the constant term
+            // The sort process puts constants behind variables. We want this, because a*2 comes before b*1.5.
+            //
+            // However, we normally write the constant term
             // in front of variables. Handle this by writing our our children in two passes. First write
             // out constants, then other children.
             //
-            // This we get 10*a instead of a*10
+            // Thus we get 10*a instead of a*10
             //
+            // Similarly, we do the same thing for differentials - they are put last.
             int cnt = 0;
             foreach(var node in Children)
             {
@@ -51,7 +54,7 @@ namespace SSMS.Nodes
 
             foreach (var node in Children)
             {
-                if (node.Type == NodeTypes.Constant)
+                if (node.Type == NodeTypes.Constant || node.Type == NodeTypes.Differential || node.Type == NodeTypes.Wedge)
                     continue;
 
                 if (cnt++ > 0)
@@ -67,7 +70,16 @@ namespace SSMS.Nodes
                 }
                 else need_paren = false;
                 fb.Append(node.ToString(), need_paren);
-            }       
+            }
+
+            foreach (var node in Children)
+            {
+                if (node.Type != NodeTypes.Differential && node.Type != NodeTypes.Wedge)
+                    continue;
+                if (cnt++ > 0)
+                    fb.Append('*');
+                fb.Append(node.ToString());
+            }
         }
 
 
@@ -283,6 +295,34 @@ namespace SSMS.Nodes
                 result.AddChild(prod);
             }
             return result;
+        }
+
+        public override void AssertValid()
+        {
+            base.AssertValid();
+            int cnt = 0;
+            foreach (var v in Children)
+            {
+                if (v.HasDifferential())
+                    cnt++;
+            }
+            // We cannot have powers of differentials.
+            Debug.Assert(cnt <= 1);
+        }
+
+        public override bool HasDifferential()
+        {
+            int cnt = 0;
+            foreach (var v in Children)
+            {
+                if (v.HasDifferential())
+                    cnt++;
+            }
+
+            if (cnt > 1)
+                throw new ApplicationException(string.Format("Expression {0} has differntials that do not appear linearly.", ToString()));
+
+            return cnt > 0;
         }
 
     }

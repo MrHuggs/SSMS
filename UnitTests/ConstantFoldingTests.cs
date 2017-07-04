@@ -63,9 +63,81 @@ namespace UnitTests
             enode = new PowerNode(c10, c0);
             folded = enode.FoldConstants();
             Assert.AreEqual("1", folded.ToString());
+
+
+            var wtn = SymNodeBuilder.ParseString(@"r*cos(phi)*cos(theta)*sin(phi)*sin(theta)*(d_phi/\d_r)-sin(phi)*cos(theta)*r*cos(phi)*sin(theta)*(d_phi/\d_r)");
+            var wtn_s = TransformsList.Inst().TrySimplify(wtn);
+            Assert.AreEqual(wtn_s.IsZero(), true);
+
+        }
+
+
+        [TestCase]
+        public void WedgeMergeTest()
+        {
+            var pt = SymNodeBuilder.ParseString(@"-a*b");
+            pt = pt.Merge();
+            Assert.AreEqual(@"-a*b", pt.ToString());
+
+            var x = SymNodeBuilder.ParseString(@"d_y/\d_x");
+            Assert.AreEqual(x.Merge(), null);
+            var xfc = x.FoldConstants();
+            Assert.AreEqual(@"-d_x/\d_y", xfc.ToString());
+
+            var w = SymNodeBuilder.ParseString(@"d_y/\d_x/\d_z");
+            var merged = w.Merge();
+            var folded = merged.FoldConstants();
+            Assert.AreEqual(@"-d_x/\d_y/\d_z", folded.ToString());
+
+            var x_wedge_w = new WedgeNode(x, w);
+            Assert.AreEqual(@"(d_y/\d_x)/\((d_y/\d_x)/\d_z)", x_wedge_w.ToString());
+            var x_wedge_w_merged = x_wedge_w.Merge();
+            Assert.AreEqual(@"d_y/\d_x/\(d_y/\d_x)/\d_z", x_wedge_w_merged.ToString());
+
+            var x_wedge_w_simple = TransformsList.Inst().Simplify(x_wedge_w);
+            Assert.AreEqual(@"0", x_wedge_w_simple.ToString());
+
         }
 
         [TestCase]
+        public void WedgeMergeTestEx()
+        {
+        
+            Tuple<string, string, string>[] tests =
+            {
+                Tuple.Create(@"d_x/\(d_x+d_y)", @"d_x/\(d_x+d_y)", @"d_x/\d_y"),
+                Tuple.Create(@"(d_x+d_y)/\d_x", @"(d_x+d_y)/\d_x", @"-d_x/\d_y"),
+                Tuple.Create(@"(d_x+d_y)/\d_x/\(d_a+d_b)", @"(d_x+d_y)/\d_x/\(d_a+d_b)", @"-d_a/\d_x/\d_y-d_b/\d_x/\d_y"),
+                Tuple.Create(@"d_x/\4", @"4*d_x", ""),       
+                Tuple.Create(@"d_x/\(4+a+sin(x))", @"(4+a+sin(x))*d_x", ""),       
+                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*(d_x+d_y)/\d_x", ""),  
+                Tuple.Create(@"(d_x+d_z)/\(d_x+d_y)", @"(d_x+d_z)/\(d_x+d_y)", ""),
+                Tuple.Create(@"(d_x+d_z)/\(d_x+(d_y/\d_q))", @"(d_x+d_z)/\(d_x-d_q/\d_y)", ""),
+                Tuple.Create(@"(d_a/\d_z)/\(d_b/\((d_y/\d_c)/\d_q))", @"d_a/\d_b/\d_c/\d_q/\d_y/\d_z", ""),
+                Tuple.Create(@"r*cos(phi)*cos(theta)*d_phi/\r*cos(phi)*sin(theta)*d_phi", "0", ""),
+            };                                                                                                                        
+
+            for (int i = tests.Length - 1; i >= 0; i--)
+            {
+                var s = tests[i];
+                var node = SymNodeBuilder.ParseString(s.Item1);
+
+                var simple = TransformsList.Inst().Simplify(node);
+                if (simple == null) simple = node;
+                Assert.AreEqual(s.Item2, simple.ToString());
+
+                if (s.Item3 != "")
+                {
+                    var ex = TransformsList.Inst().Expand(simple);
+                    var ex_folded = ex.FoldConstants();
+                    Assert.AreEqual(s.Item3, ex_folded.ToString());
+                }
+            }
+
+}
+
+
+[TestCase]
         public void PlusMergeTest()
         {
             ProdNode prod;
@@ -133,8 +205,6 @@ namespace UnitTests
             merged = prod.Merge();
             folded = merged.FoldConstants();
             Assert.AreEqual("4*x*cos(y)", folded.ToString());
-            
-
         }
 
         [TestCase]
@@ -165,8 +235,8 @@ namespace UnitTests
             Assert.AreEqual("a+a*(b*c)*cos(g^h)", plus.ToStringSorted());
 
             Assert.AreEqual(null, tlist.Expand(plus));
-            merged = tlist.Simplify(plus);
-            Assert.AreEqual("a+a*b*c*cos(g^h)", merged.ToStringSorted());
+            var v = tlist.Simplify(plus);
+            Assert.AreEqual("a+a*b*c*cos(g^h)", v.ToStringSorted());
         }
 
 
@@ -356,7 +426,6 @@ namespace UnitTests
             en = en.Evaluate();
             Assert.AreEqual(NodeTypes.Constant, en.Type);  // Doesn't evaluate cause negative base.
             Assert.AreEqual("2.12442716630506E+16", en.ToString());
-
         }
     }
 }

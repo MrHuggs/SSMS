@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
 
 namespace SSMS.Nodes
@@ -13,6 +12,26 @@ namespace SSMS.Nodes
         //
 
         public List<SymNode> Children = new List<SymNode>();
+
+        public override bool IsEqual(SymNode other)
+        {
+            if (other.Type != Type)
+                return false;
+
+            ChildListNode node = (ChildListNode)other;
+            var ocount = node.Children.Count;
+
+            if (ocount != Children.Count)
+                return false;
+
+            // Order matters, so just compare in order:
+            for (int i = 0; i < ocount; i++)
+            {
+                if (!Children[i].IsEqual(node.Children[i]))
+                    return false;
+            }
+            return true;
+        }
 
         public override int ChildCount() { return Children.Count; }
         public override SymNode GetChild(int index) { return Children[index]; }
@@ -36,36 +55,6 @@ namespace SSMS.Nodes
         public void RemoveChild(SymNode node) { Children.Remove(node); }
         public void RemoveLastChild() { Children.RemoveAt(Children.Count - 1);  }
 
-        public override bool IsEqual(SymNode other)
-        {
-            if (other.Type != Type)
-                return false;
-
-            CommutativeNode pnode = (CommutativeNode)other;
-            var ocount = pnode.Children.Count;
-
-            if (ocount != Children.Count)
-                return false;
-
-            // The other list might be in a different order.
-            bool[] used = new bool[ocount];
-
-            for (int i = 0; i < ocount; i++)
-            {
-                SymNode child = Children[i];
-                for (int j = 0; ; j++)
-                {
-                    if (j == ocount)
-                        return false;   // failed to find a match.
-                    if (used[j])
-                        continue;
-
-                    if (child.IsEqual(pnode.Children[i]))
-                        break;
-                }
-            }
-            return true;
-        }
 
         // Helper function so that derived classes can implment DeepClone.
         public void DeepCloneChildren(ChildListNode other)
@@ -81,6 +70,50 @@ namespace SSMS.Nodes
             base.AssertValid();
             Debug.Assert(Children.Count > 1);
             Children.ForEach(node => node.AssertValid());
+        }
+
+        public override bool HasDifferential()
+        {
+            foreach (var v in Children)
+            {
+                if (v.HasDifferential())
+                    return true;
+            }
+            return false;
+        }
+
+        public ChildListNode MergeChildrenUp()
+        {
+            // If we have any children that are the same type, move their nodes into us.
+            // Return null if no merging occured.
+            bool can_merge = false;
+            foreach (var v in Children)
+            {
+                if (v.Type == Type)
+                {
+                    can_merge = true;
+                    break;
+                }
+            }
+            if (!can_merge)
+                return null;
+
+                    
+            ChildListNode result = (ChildListNode)Activator.CreateInstance(GetType()); // Create new object of the same type.
+
+            foreach (var v in Children)
+            {
+                if (v.Type == Type)
+                {
+                    ((CommutativeNode)v).Children.ForEach(node => { result.AddChild(node.DeepClone()); });
+                }
+                else
+                    result.AddChild(v.DeepClone());
+            }
+
+            result.AssertValid();
+
+            return result;
         }
     }
 }
