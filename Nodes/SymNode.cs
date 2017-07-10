@@ -59,7 +59,8 @@ namespace SSMS.Nodes
             return false;
         }
         // Perform a deep equality check BY VALUE: Returns true if this and its children have the same values
-        // as other and its children.
+        // as other and its children. The node structure must match as well, so that  a*b*c != (a*b)*c.
+        //
         public abstract bool IsEqual(SymNode other);
 
         // Reorder any nodes that can be reorded without affecting the meaning of the expression.
@@ -98,6 +99,14 @@ namespace SSMS.Nodes
             node.Print();
         }
 
+        public string BreakStringSorted()
+        {
+            string s = "\t" + ToStringSorted();
+            s = s.Replace("+", "\n\t+");
+            s = s.Replace("-", "\n\t-");
+            return s;
+        }
+
         // Helper functions that can be used for simplification. These should be conserviative, i.e.,
         // IsZero returns true if the result is GURANTEED to be 0, it could still be 0 even if the
         // function returns false.
@@ -123,8 +132,24 @@ namespace SSMS.Nodes
         // Does NOT act recursively.
         public virtual SymNode Merge() { return null; }
 
-        // Perform differntiation WRT to the supplied variable:
+        // Perform differntiation WRT to the supplied variable. Returns a new node:
         public abstract SymNode Differentiate(string var);
+
+        // Compute the differntial WRT a series of variables given by name. Returns a new node.
+        //      Differential( {"a","b"}, ab + b^2 ) --> b da + (a + 2b) db
+        //
+        public SymNode Differential(List<string> var_list)
+        {
+            var plus_node = new PlusNode();
+
+            foreach(var name in var_list)
+            {
+                var diff = Differentiate(name);
+                var node = new WedgeNode(diff, new DNode(name));
+                plus_node.AddChild(node);
+            }
+            return plus_node;
+        }
 
         // Does this node or any of its children have a differential (e.g. DNode) appearing as a linear term?
         // Note that non-linear combinations of differentials are not allowed. This will through an exception if 

@@ -7,6 +7,7 @@ using SSMS.Nodes;
 namespace SSMS.Parser
 {
     // Converts an expression tree into sym nodes.
+    // Note that simplification and expansion are not performed.
     public class SymNodeBuilder
     {
 
@@ -39,8 +40,15 @@ namespace SSMS.Parser
             return result;
         }
 
+        public static SymNode SimplifyString(string str)
+        {
+            var result = ParseString(str);
+            result = TransformsList.Inst().TrySimplify(result);
+            return result;
+        }
 
-        static public SymNode CreateNodes(List<ExpNode> expression)
+
+            static public SymNode CreateNodes(List<ExpNode> expression)
         {
             if (expression.Count > 1)
             { 

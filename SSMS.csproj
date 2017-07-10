@@ -58,6 +58,8 @@
     <Compile Include="Parser\ExpressionBuilder.cs" />
     <Compile Include="Parser\SymNodeBuilder.cs" />
     <Compile Include="Parser\Tokenizer.cs" />
+    <Compile Include="Problems\Lee14_6.cs" />
+    <Compile Include="Problems\Lee14_7.cs" />
     <Compile Include="Transforms\ConstFoldTransform.cs" />
     <Compile Include="Nodes\ConstNode.cs" />
     <Compile Include="Transforms\Cos2Sin2Transform.cs" />
@@ -75,6 +77,7 @@
     <Compile Include="Nodes\VarNode.cs" />
     <Compile Include="Transforms\MergeTransform.cs" />
     <Compile Include="Transforms\NodeTransform.cs" />
+    <Compile Include="Transforms\Pullback.cs" />
     <Compile Include="Transforms\Substitution.cs" />
   </ItemGroup>
   <ItemGroup>

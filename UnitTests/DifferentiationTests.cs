@@ -99,5 +99,30 @@ namespace UnitTests
             }
 
         }
+
+        [TestCase]
+        public void ExteriorDerivativeTests()
+        {
+            Tuple<string, string>[] tests =
+            {
+                Tuple.Create("0", "0"),
+                Tuple.Create("0+x", "d_x"),
+                Tuple.Create("x*d_x", "0"),
+                Tuple.Create("y*d_x", @"-d_x/\d_y"),
+                Tuple.Create("y*d_x", @"-d_x/\d_y"),
+                Tuple.Create(@"y*d_z/\d_x", @"d_x/\d_y/\d_z"),
+            };
+
+            for (int i = tests.Length - 1; i >= 0; i--)
+            {
+                var s = tests[i].Item1;
+                var node = SymNodeBuilder.SimplifyString(s);
+                var diff = Differential.ExteriorDerivative(node);
+                var diff_s = TransformsList.Inst().TrySimplify(diff);
+
+                Assert.AreEqual(tests[i].Item2, diff_s.ToStringSorted());
+            }
+
+        }
     }
 }

@@ -36,12 +36,24 @@ namespace SSMS.Nodes
         public override int ChildCount() { return Children.Count; }
         public override SymNode GetChild(int index) { return Children[index]; }
 
+
         public override void ReplaceChild(SymNode existing_child, SymNode new_child)
         {
-            Children.Remove(existing_child);
+            if (new_child == null)
+            {
+                Children.Remove(existing_child);
+                return;
+            }
 
-            if (new_child != null)
-                AddChild(new_child);
+            for (int i = 0; ; i++)
+            {
+                Debug.Assert(i < Children.Count);   // Should be able to find it.
+                if (Children[i] == existing_child)
+                {
+                    Children[i] = new_child;
+                    return;
+                }
+            }
         }
 
         public void AddChild(SymNode child)

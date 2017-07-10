@@ -108,12 +108,14 @@ namespace SSMS.Nodes
                     all_differentials = false;
             }
 
+            if (new_node.IsZero())
+                return new ConstNode(0);
+
+            if (new_node.Children.Count == 1)
+                return new_node.Children[0];
 
             if (all_differentials)
             {
-                if (new_node.IsZero())
-                    return new ConstNode(0);
-
                 int sgn = new_node.SortDNodes();
                 if (sgn != 1)
                 {
@@ -242,7 +244,7 @@ namespace SSMS.Nodes
             foreach(var v in factors)
                 prod.AddChild(v.DeepClone());
 
-            prod.AddChild(new_wedges); // Know it's different: A wedge node became a prod node.
+            prod.AddChild(new_wedges); // Know it's different at this point: A wedge node became a prod node.
             return prod;
         }
 

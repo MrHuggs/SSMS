@@ -110,12 +110,16 @@ namespace UnitTests
                 Tuple.Create(@"(d_x+d_y)/\d_x/\(d_a+d_b)", @"(d_x+d_y)/\d_x/\(d_a+d_b)", @"-d_a/\d_x/\d_y-d_b/\d_x/\d_y"),
                 Tuple.Create(@"d_x/\4", @"4*d_x", ""),       
                 Tuple.Create(@"d_x/\(4+a+sin(x))", @"(4+a+sin(x))*d_x", ""),       
-                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*(d_x+d_y)/\d_x", ""),  
+                Tuple.Create(@"(d_x+d_x)/\(d_x+d_y)", @"2*d_x/\(d_x+d_y)", ""),  
                 Tuple.Create(@"(d_x+d_z)/\(d_x+d_y)", @"(d_x+d_z)/\(d_x+d_y)", ""),
                 Tuple.Create(@"(d_x+d_z)/\(d_x+(d_y/\d_q))", @"(d_x+d_z)/\(d_x-d_q/\d_y)", ""),
                 Tuple.Create(@"(d_a/\d_z)/\(d_b/\((d_y/\d_c)/\d_q))", @"d_a/\d_b/\d_c/\d_q/\d_y/\d_z", ""),
                 Tuple.Create(@"r*cos(phi)*cos(theta)*d_phi/\r*cos(phi)*sin(theta)*d_phi", "0", ""),
-            };                                                                                                                        
+                Tuple.Create(@"(2*u/\d_u)/\v*d_u", @"0", ""),
+                Tuple.Create(@"-2*u^2*d_u/\d_v-2*v^2*d_u/\d_v",@"-2*u^2*d_u/\d_v-2*v^2*d_u/\d_v",""),
+                Tuple.Create(@"-2*u^2*d_u/\d_v",@"-2*u^2*d_u/\d_v",""),
+                Tuple.Create(@"u^2*d_u/\d_v",@"u^2*d_u/\d_v",""),
+    };                                                                                                                        
 
             for (int i = tests.Length - 1; i >= 0; i--)
             {
