@@ -81,7 +81,11 @@ namespace SSMS.Nodes
         {
             base.AssertValid();
             Debug.Assert(Children.Count > 1);
-            Children.ForEach(node => node.AssertValid());
+			Children.ForEach(node => 
+				{
+					Debug.Assert(node != null);
+					node.AssertValid();
+				});
         }
 
         public override bool HasDifferential()

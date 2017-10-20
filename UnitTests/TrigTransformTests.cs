@@ -19,8 +19,9 @@ namespace UnitTests
             {
                 Tuple.Create(@"sin(x)^2+cos(x)^2", @"1"),
                 Tuple.Create(@"a*sin(x)^2+cos(x)^2*a", @"a"),
-                Tuple.Create(@"(1+x)*sin(x)^2+cos(x)^2*(x+1)", @"(1+x)"),
-            };
+                Tuple.Create(@"(1+x)*sin(x)^2+cos(x)^2*(x+1)", @"1+x"),
+				Tuple.Create(@"2*sin(x)^2+2*cos(x)^2", @"2"),
+			};
 
             for (int i = tests.Length - 1; i >= 0; i--)
             {
@@ -28,6 +29,7 @@ namespace UnitTests
                 var node = SymNodeBuilder.ParseString(s.Item1);
 
                 var simple = Cos2Sin2Transform._Apply(node);
+				simple.AssertValid();
                 if (simple == null) simple = node;
                 Assert.AreEqual(s.Item2, simple.ToString());
 

@@ -215,21 +215,24 @@ namespace SSMS.Nodes
 
             SymNode new_wedges;
 
-            if (wedges.Count > 1)
-            {
-                var new_wedge = new WedgeNode();
+			if (wedges.Count > 1)
+			{
+				var new_wedge = new WedgeNode();
 
-                foreach (var v in wedges)
-                    new_wedge.AddChild(v.DeepClone());
+				foreach (var v in wedges)
+					new_wedge.AddChild(v.DeepClone());
 
-                new_wedges = new_wedge;
-            }
-            else if (wedges.Count == 1)
-            {
-                new_wedges = wedges[0].DeepClone();
-            }
-            else
-                new_wedges = null;
+				new_wedges = new_wedge;
+			}
+			else if (wedges.Count == 1)
+			{
+				new_wedges = wedges[0].DeepClone();
+			}
+			else
+			{
+				Debug.Assert(!HasDifferential());
+				new_wedges = null;
+			}
 
             if (factors.Count == 0)
             {
@@ -244,7 +247,9 @@ namespace SSMS.Nodes
             foreach(var v in factors)
                 prod.AddChild(v.DeepClone());
 
-            prod.AddChild(new_wedges); // Know it's different at this point: A wedge node became a prod node.
+			if (new_wedges != null)
+				prod.AddChild(new_wedges); // Know it's different at this point: A wedge node became a prod node.
+			// else there are no nodes that require a wedge product. This would happen if there were no differentials at all.
             return prod;
         }
 

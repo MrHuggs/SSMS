@@ -60,6 +60,7 @@
     <Compile Include="Parser\Tokenizer.cs" />
     <Compile Include="Problems\Lee14_6.cs" />
     <Compile Include="Problems\Lee14_7.cs" />
+    <Compile Include="Problems\Lee16_10.cs" />
     <Compile Include="Transforms\ConstFoldTransform.cs" />
     <Compile Include="Nodes\ConstNode.cs" />
     <Compile Include="Transforms\Cos2Sin2Transform.cs" />

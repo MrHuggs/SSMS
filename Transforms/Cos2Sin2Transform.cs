@@ -218,6 +218,12 @@ namespace SSMS.Nodes
 
                 var match_owner = (ProdNode)plus_node_result.Children[match.OwnerIndex];
                 match_owner.RemoveChild(match.Index);   // The cos^2 node
+				if (match_owner.ChildCount() == 1)
+				{
+					// The match owner now has a single node, so, just use that. This would happen if we had somehting
+					// like 2*cos^2(x).
+					plus_node_result.ReplaceChild(match_owner, match_owner.GetChild(0));
+				}
 
                 plus_node_result.RemoveChild(match_index);  
 

@@ -119,7 +119,8 @@ namespace UnitTests
                 Tuple.Create(@"-2*u^2*d_u/\d_v-2*v^2*d_u/\d_v",@"-2*u^2*d_u/\d_v-2*v^2*d_u/\d_v",""),
                 Tuple.Create(@"-2*u^2*d_u/\d_v",@"-2*u^2*d_u/\d_v",""),
                 Tuple.Create(@"u^2*d_u/\d_v",@"u^2*d_u/\d_v",""),
-    };                                                                                                                        
+				Tuple.Create(@"u/\v",@"u*v",""),
+	};                                                                                                                        
 
             for (int i = tests.Length - 1; i >= 0; i--)
             {
